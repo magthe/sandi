@@ -1,0 +1,17 @@
+name: omnicodec
+version: 0.1
+license: GPL
+license-file: COPYING
+author: Magnus Therning
+maintainer: magnus@therning.org
+copyright: Magnus Therning, 2007
+synopsis: data encoding and decoding command line utilities
+build-depends: base, dataenc >= 0.10.1, haskell98, unix, filepath
+
+executable: odec
+main-is: odec.hs
+hs-source-dirs: src
+
+executable: oenc
+main-is: oenc.hs
+hs-source-dirs: src
