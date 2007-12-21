@@ -7,6 +7,8 @@ import Data.Maybe
 import Data.Word
 import System
 import System.Console.GetOpt
+import Control.Exception as CE
+import System.Directory
 
 ver = "omnicode decode (odec) 0.1\n\
     \Copyright 2007 Magnus Therning <magnus@therning.org>"
@@ -15,13 +17,15 @@ ver = "omnicode decode (odec) 0.1\n\
 data DecOptions = DecOptions {
     optDecode :: [String] -> [Maybe Word8],
     optRead :: IO String,
-    optWrite :: String -> IO ()
+    optWrite :: String -> IO (),
+    fn :: Maybe String  -- needed in case we need to clean up later on
     }
 
 defaultOptions = DecOptions {
     optDecode = decode' uu . unchop uu,
     optRead = getContents,
-    optWrite = putStr
+    optWrite = putStr,
+    fn = Nothing
     }
 
 -- {{{2 Command line
@@ -34,7 +38,7 @@ options = [
     ]
 
 -- {{{2 Processing command line
-setOptOutput fn opts = return opts { optWrite = writeFile fn }
+setOptOutput fn opts = return opts { optWrite = writeFile fn, fn = Just fn }
 setOptCodec codec opts = case codec of
     "uu" -> return opts { optDecode = decode' uu . unchop uu }
     "b64" -> return opts { optDecode = decode' base64 . unchop base64 }
@@ -52,7 +56,7 @@ processFileName _ = return defaultOptions
 
 -- {{{1 _decode
 _decode :: DecOptions -> String -> IO String
-_decode opts = return .  map (chr . fromIntegral . fromMaybe (error "Not decodable")) . optDecode opts . lines
+_decode opts = return .  map (chr . fromIntegral . fromMaybe (error "Illegal character")) . optDecode opts . lines
 
 -- {{{1 main
 main :: IO ()
@@ -60,4 +64,5 @@ main = do
     args <- getArgs
     let (actions, nonOpts, msgs) = getOpt RequireOrder options args
     opts <- foldl (>>=) (processFileName nonOpts) actions
-    optRead opts >>= _decode opts >>= optWrite opts
+    CE.catch (optRead opts >>= _decode opts >>= optWrite opts)
+        (\ e -> maybe (return ()) removeFile (fn opts) >> throwIO e)
