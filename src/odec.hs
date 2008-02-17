@@ -32,7 +32,7 @@ defaultOptions = DecOptions {
 options :: [OptDescr (DecOptions -> IO DecOptions)]
 options = [
     Option "o" ["output"] (ReqArg setOptOutput "FILE") "output to file",
-    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec",
+    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,b64,b64u,b32,b32h,b16)",
     Option "" ["version"] (NoArg optShowVersion) "",
     Option "h" ["help"] (NoArg optShowHelp) ""
     ]
