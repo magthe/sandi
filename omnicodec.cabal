@@ -6,7 +6,10 @@ author: Magnus Therning
 maintainer: magnus@therning.org
 copyright: Magnus Therning, 2007
 synopsis: data encoding and decoding command line utilities
+description: Two simply command line tools built on dataenc.
 build-depends: base, dataenc >= 0.10.1, directory, filepath, haskell98
+build-type: Simple
+category: Codec
 
 executable: odec
 main-is: odec.hs
