@@ -6,7 +6,7 @@ author: Magnus Therning
 maintainer: magnus@therning.org
 copyright: Magnus Therning, 2007
 synopsis: data encoding and decoding command line utilities
-build-depends: base, dataenc >= 0.10.1, directory, unix, filepath, haskell98
+build-depends: base, dataenc >= 0.10.1, directory, filepath, haskell98
 
 executable: odec
 main-is: odec.hs

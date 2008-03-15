@@ -9,7 +9,6 @@ import Numeric
 import System
 import System.Console.GetOpt
 import System.FilePath
-import System.Posix.Files
 
 ver = "omnicode encode (oenc) 0.1\n\
     \Copyright 2007 Magnus Therning <magnus@therning.org>"
