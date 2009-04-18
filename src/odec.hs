@@ -84,4 +84,4 @@ main = do
     let (actions, nonOpts, msgs) = getOpt RequireOrder options args
     opts <- foldl (>>=) (processFileName nonOpts) actions
     CE.catch (optRead opts >>= _decode opts >>= optWrite opts)
-        (\ e -> maybe (return ()) removeFile (fn opts) >> throwIO e)
+        (\ (CE.SomeException e) -> maybe (return ()) removeFile (fn opts) >> throwIO e)
