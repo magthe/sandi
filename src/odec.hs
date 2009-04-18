@@ -22,14 +22,17 @@ module Main
 import Codec.Binary.DataEncoding
 import Data.Char
 import Data.Maybe
+import Data.Version (showVersion)
 import Data.Word
 import System
 import System.Console.GetOpt
 import Control.Exception as CE
 import System.Directory
 
-ver = "omnicode decode (odec) 0.1\n\
-    \Copyright 2007 Magnus Therning <magnus@therning.org>"
+import Paths_omnicodec (version)
+
+ver = "omnicode decode (odec) " ++ (showVersion version)
+    ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
 
 -- {{{1 Options
 data DecOptions = DecOptions {

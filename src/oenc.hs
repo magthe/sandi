@@ -22,14 +22,17 @@ module Main
 import Codec.Binary.DataEncoding
 import Control.Monad
 import Data.Char
+import Data.Version (showVersion)
 import Data.Word
 import Numeric
 import System
 import System.Console.GetOpt
 import System.FilePath
 
-ver = "omnicode encode (oenc) 0.1\n\
-    \Copyright 2007 Magnus Therning <magnus@therning.org>"
+import Paths_omnicodec (version)
+
+ver = "omnicode encode (oenc) " ++ (showVersion version)
+    ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
 
 -- {{{1 Options
 data EncOptions = EncOptions {
