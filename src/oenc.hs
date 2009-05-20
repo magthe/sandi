@@ -50,7 +50,7 @@ defaultOptions = EncOptions {
 options :: [OptDescr (EncOptions -> IO EncOptions)]
 options = [
     Option "o" ["output"] (ReqArg setOptOutput "FILE") "output to file",
-    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,b85,b64,b64u,b32,b32h,b16)",
+    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,xx,qp,py,b85,b64,b64u,b32,b32h,b16)",
     Option "" ["version"] (NoArg optShowVersion) "",
     Option "h" ["help"] (NoArg optShowHelp) ""
     ]
@@ -58,6 +58,9 @@ options = [
 -- {{{2 option actions
 setOptCodec codec opts = case codec of
     "uu" -> return opts { optEncode = chop uu 61 . encode uu }
+    "xx" -> return opts { optEncode = chop xx 61 . encode xx }
+    "qp" -> return opts { optEncode = chop qp 60 . encode qp }
+    "py" -> return opts { optEncode = chop py 60 . encode py }
     "b85" -> return opts { optEncode = chop base85 60 . encode base85 }
     "b64" -> return opts { optEncode = chop base64 60 . encode base64 }
     "b64u" -> return opts { optEncode = chop base64Url 60 . encode base64Url }

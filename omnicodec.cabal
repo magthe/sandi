@@ -1,5 +1,5 @@
 name: omnicodec
-version: 0.2
+version: 0.3
 license: GPL
 license-file: COPYING
 author: Magnus Therning
@@ -7,7 +7,7 @@ maintainer: magnus@therning.org
 copyright: Magnus Therning, 2007
 synopsis: data encoding and decoding command line utilities
 description: Two simply command line tools built on dataenc.
-build-depends: base, dataenc >= 0.11, directory, filepath, haskell98
+build-depends: base, dataenc >= 0.13, directory, filepath, haskell98
 build-type: Simple
 category: Codec
 

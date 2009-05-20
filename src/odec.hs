@@ -53,7 +53,7 @@ defaultOptions = DecOptions {
 options :: [OptDescr (DecOptions -> IO DecOptions)]
 options = [
     Option "o" ["output"] (ReqArg setOptOutput "FILE") "output to file",
-    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,b85,b64,b64u,b32,b32h,b16)",
+    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,xx,qp,py,b85,b64,b64u,b32,b32h,b16)",
     Option "" ["version"] (NoArg optShowVersion) "",
     Option "h" ["help"] (NoArg optShowHelp) ""
     ]
@@ -62,6 +62,9 @@ options = [
 setOptOutput fn opts = return opts { optWrite = writeFile fn, fn = Just fn }
 setOptCodec codec opts = case codec of
     "uu" -> return opts { optDecode = decode' uu . unchop uu }
+    "xx" -> return opts { optDecode = decode' xx . unchop xx }
+    "qp" -> return opts { optDecode = decode' qp . unchop qp }
+    "py" -> return opts { optDecode = decode' py . unchop py }
     "b85" -> return opts { optDecode = decode' base85 . unchop base85 }
     "b64" -> return opts { optDecode = decode' base64 . unchop base64 }
     "b64u" -> return opts { optDecode = decode' base64Url . unchop base64Url }
