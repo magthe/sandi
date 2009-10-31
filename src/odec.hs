@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
 module Main
-    where
+    ( main
+    ) where
 
 import Codec.Binary.DataEncoding
 import Data.Char
@@ -31,6 +32,7 @@ import System.Directory
 
 import Paths_omnicodec (version)
 
+ver :: String
 ver = "omnicode decode (odec) " ++ (showVersion version)
     ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
 
@@ -39,14 +41,15 @@ data DecOptions = DecOptions {
     optDecode :: [String] -> [Maybe Word8],
     optRead :: IO String,
     optWrite :: String -> IO (),
-    fn :: Maybe String  -- needed in case we need to clean up later on
+    optFn :: Maybe String  -- needed in case we need to clean up later on
     }
 
+defaultOptions :: DecOptions
 defaultOptions = DecOptions {
     optDecode = decode' uu . unchop uu,
     optRead = getContents,
     optWrite = putStr,
-    fn = Nothing
+    optFn = Nothing
     }
 
 -- {{{2 Command line
@@ -59,7 +62,10 @@ options = [
     ]
 
 -- {{{2 Processing command line
-setOptOutput fn opts = return opts { optWrite = writeFile fn, fn = Just fn }
+setOptOutput :: FilePath -> DecOptions -> IO DecOptions
+setOptOutput fn opts = return opts { optWrite = writeFile fn, optFn = Just fn }
+
+setOptCodec :: String -> DecOptions -> IO DecOptions
 setOptCodec codec opts = case codec of
     "uu" -> return opts { optDecode = decode' uu . unchop uu }
     "xx" -> return opts { optDecode = decode' xx . unchop xx }
@@ -71,8 +77,12 @@ setOptCodec codec opts = case codec of
     "b32" -> return opts { optDecode = decode' base32 . unchop base32 }
     "b32h" -> return opts { optDecode = decode' base32Hex . unchop base32Hex }
     "b16" -> return opts { optDecode = decode' base16 . unchop base16 }
+    _ -> error "Unknown encoding."
 
+optShowVersion :: a -> IO DecOptions
 optShowVersion _ = putStrLn ver >> exitWith ExitSuccess
+
+optShowHelp :: DecOptions -> IO DecOptions
 optShowHelp _ = putStrLn (usageInfo "Usage:" options) >> exitWith ExitSuccess
 
 processFileName :: [String] -> IO DecOptions
@@ -87,7 +97,7 @@ _decode opts = return .  map (chr . fromIntegral . fromMaybe (error "Illegal cha
 main :: IO ()
 main = do
     args <- getArgs
-    let (actions, nonOpts, msgs) = getOpt RequireOrder options args
+    let (actions, nonOpts, _) = getOpt RequireOrder options args
     opts <- foldl (>>=) (processFileName nonOpts) actions
     CE.catch (optRead opts >>= _decode opts >>= optWrite opts)
-        (\ (CE.SomeException e) -> maybe (return ()) removeFile (fn opts) >> throwIO e)
+        (\ (CE.SomeException e) -> maybe (return ()) removeFile (optFn opts) >> throwIO e)

@@ -24,13 +24,13 @@ import Control.Monad
 import Data.Char
 import Data.Version (showVersion)
 import Data.Word
-import Numeric
 import System
 import System.Console.GetOpt
 import System.FilePath
 
 import Paths_omnicodec (version)
 
+ver :: String
 ver = "omnicode encode (oenc) " ++ (showVersion version)
     ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
 
@@ -41,6 +41,7 @@ data EncOptions = EncOptions {
     optWrite :: String -> IO ()
     }
 
+defaultOptions :: EncOptions
 defaultOptions = EncOptions {
     optEncode = chop uu 61 . encode uu,
     optRead = getContents,
@@ -56,6 +57,7 @@ options = [
     ]
 
 -- {{{2 option actions
+setOptCodec :: String -> EncOptions -> IO EncOptions
 setOptCodec codec opts = case codec of
     "uu" -> return opts { optEncode = chop uu 61 . encode uu }
     "xx" -> return opts { optEncode = chop xx 61 . encode xx }
@@ -67,9 +69,15 @@ setOptCodec codec opts = case codec of
     "b32" -> return opts { optEncode = chop base32 60 . encode base32 }
     "b32h" -> return opts { optEncode = chop base32Hex 60 . encode base32Hex }
     "b16" -> return opts { optEncode = chop base16 60 . encode base16 }
+    _ -> error "Unknown encoding."
 
+setOptOutput :: FilePath -> EncOptions -> IO EncOptions
 setOptOutput fn opts = return opts { optWrite = writeFile fn }
+
+optShowVersion :: EncOptions -> IO EncOptions
 optShowVersion _ = putStrLn ver >> exitWith ExitSuccess
+
+optShowHelp :: EncOptions -> IO EncOptions
 optShowHelp _ = putStr (usageInfo "Usage:" options) >> exitWith ExitSuccess
 
 processFileName :: [String] -> IO EncOptions
@@ -84,6 +92,6 @@ encode' opts = return . unlines . optEncode opts . map (fromIntegral . ord)
 main :: IO ()
 main = do
     args <- getArgs
-    let (actions, nonOpts, msgs) = getOpt RequireOrder options args
+    let (actions, nonOpts, _) = getOpt RequireOrder options args
     opts <- foldl (>>=) (processFileName nonOpts) actions
     optRead opts >>= encode' opts >>= optWrite opts
