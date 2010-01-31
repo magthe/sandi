@@ -20,13 +20,11 @@ module Main
     where
 
 import Codec.Binary.DataEncoding
-import Control.Monad
 import Data.Char
 import Data.Version (showVersion)
 import Data.Word
 import System
 import System.Console.GetOpt
-import System.FilePath
 
 import Paths_omnicodec (version)
 

@@ -14,11 +14,11 @@ cabal-version: >= 1.2
 executable odec
   main-is: odec.hs
   hs-source-dirs: src
-  build-depends: base >= 4.0.0 && < 4.2, dataenc >= 0.13, directory, filepath, haskell98
+  build-depends: base >= 4.0.0 && < 4.3, dataenc >= 0.13, directory, filepath, haskell98
   ghc-options: -Wall
 
 executable oenc
   main-is: oenc.hs
   hs-source-dirs: src
-  build-depends: base >= 4.0.0 && < 4.2, dataenc >= 0.13, directory, filepath, haskell98
+  build-depends: base >= 4.0.0 && < 4.3, dataenc >= 0.13, directory, filepath, haskell98
   ghc-options: -Wall
