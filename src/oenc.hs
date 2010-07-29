@@ -20,29 +20,29 @@ module Main
     where
 
 import Codec.Binary.DataEncoding
-import Data.Char
 import Data.Version (showVersion)
 import Data.Word
 import System
 import System.Console.GetOpt
+import qualified Data.ByteString as BS
 
 import Paths_omnicodec (version)
 
 ver :: String
 ver = "omnicode encode (oenc) " ++ (showVersion version)
-    ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
+    ++ "\nCopyright 2007-2010 Magnus Therning <magnus@therning.org>"
 
 -- {{{1 Options
 data EncOptions = EncOptions {
     optEncode :: [Word8] -> [String],
-    optRead :: IO String,
+    optRead :: IO BS.ByteString,
     optWrite :: String -> IO ()
     }
 
 defaultOptions :: EncOptions
 defaultOptions = EncOptions {
     optEncode = chop uu 61 . encode uu,
-    optRead = getContents,
+    optRead = BS.getContents,
     optWrite = putStr
     }
 
@@ -79,12 +79,12 @@ optShowHelp :: EncOptions -> IO EncOptions
 optShowHelp _ = putStr (usageInfo "Usage:" options) >> exitWith ExitSuccess
 
 processFileName :: [String] -> IO EncOptions
-processFileName (fn:_) = return defaultOptions { optRead = readFile fn }
+processFileName (fn:_) = return defaultOptions { optRead = BS.readFile fn }
 processFileName _ = return defaultOptions
 
 -- {{{1 encode
-encode' :: EncOptions -> String -> IO String
-encode' opts = return . unlines . optEncode opts . map (fromIntegral . ord)
+_encode :: EncOptions -> BS.ByteString -> IO String
+_encode opts = return . unlines . optEncode opts . BS.unpack
 
 -- {{{1 main
 main :: IO ()
@@ -92,4 +92,4 @@ main = do
     args <- getArgs
     let (actions, nonOpts, _) = getOpt RequireOrder options args
     opts <- foldl (>>=) (processFileName nonOpts) actions
-    optRead opts >>= encode' opts >>= optWrite opts
+    optRead opts >>= _encode opts >>= optWrite opts

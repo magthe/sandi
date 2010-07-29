@@ -21,7 +21,6 @@ module Main
     ) where
 
 import Codec.Binary.DataEncoding
-import Data.Char
 import Data.Maybe
 import Data.Version (showVersion)
 import Data.Word
@@ -29,18 +28,19 @@ import System
 import System.Console.GetOpt
 import Control.Exception as CE
 import System.Directory
+import qualified Data.ByteString as BS
 
 import Paths_omnicodec (version)
 
 ver :: String
 ver = "omnicode decode (odec) " ++ (showVersion version)
-    ++ "\nCopyright 2007-2009 Magnus Therning <magnus@therning.org>"
+    ++ "\nCopyright 2007-2010 Magnus Therning <magnus@therning.org>"
 
 -- {{{1 Options
 data DecOptions = DecOptions {
     optDecode :: [String] -> [Maybe Word8],
     optRead :: IO String,
-    optWrite :: String -> IO (),
+    optWrite :: BS.ByteString -> IO (),
     optFn :: Maybe String  -- needed in case we need to clean up later on
     }
 
@@ -48,7 +48,7 @@ defaultOptions :: DecOptions
 defaultOptions = DecOptions {
     optDecode = decode' uu . unchop uu,
     optRead = getContents,
-    optWrite = putStr,
+    optWrite = BS.putStr,
     optFn = Nothing
     }
 
@@ -63,7 +63,7 @@ options = [
 
 -- {{{2 Processing command line
 setOptOutput :: FilePath -> DecOptions -> IO DecOptions
-setOptOutput fn opts = return opts { optWrite = writeFile fn, optFn = Just fn }
+setOptOutput fn opts = return opts { optWrite = BS.writeFile fn, optFn = Just fn }
 
 setOptCodec :: String -> DecOptions -> IO DecOptions
 setOptCodec codec opts = case codec of
@@ -89,9 +89,9 @@ processFileName :: [String] -> IO DecOptions
 processFileName (fn:_) = return defaultOptions { optRead = readFile fn }
 processFileName _ = return defaultOptions
 
--- {{{1 _decode
-_decode :: DecOptions -> String -> IO String
-_decode opts = return .  map (chr . fromIntegral . fromMaybe (error "Illegal character")) . optDecode opts . lines
+-- {{{1 decode'
+_decode :: DecOptions -> String -> IO BS.ByteString
+_decode opts = return .  BS.pack. map (fromMaybe (error "Illegal character")) . optDecode opts . lines
 
 -- {{{1 main
 main :: IO ()
