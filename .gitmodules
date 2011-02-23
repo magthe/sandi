@@ -1,0 +1,3 @@
+[submodule "dataenc"]
+	path = dataenc
+	url = git@github.com:magthe/dataenc.git
