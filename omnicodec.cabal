@@ -11,16 +11,16 @@ build-type: Simple
 category: Codec
 cabal-version: >= 1.2
 
-executable odec
-  main-is: odec.hs
-  hs-source-dirs: src
-  build-depends: base ==4.2.*, cmdargs ==0.6.*, transformers ==0.2.*,
-      enumerator ==0.4.*, bytestring ==0.9.*
-  ghc-options: -Wall
-
--- executable oenc
---   main-is: oenc.hs
+-- executable odec
+--   main-is: odec.hs
 --   hs-source-dirs: src
---   build-depends: base >= 4.0.0 && < 4.3, dataenc >= 0.13, directory, filepath,
---       haskell98, bytestring
+--   build-depends: base ==4.2.*, cmdargs ==0.6.*, transformers ==0.2.*,
+--       bytestring ==0.9.*
 --   ghc-options: -Wall
+
+executable oenc
+  main-is: oenc.hs
+  hs-source-dirs: src
+  build-depends: base >= 4.0.0 && < 4.3, dataenc >= 0.13, directory, filepath,
+      haskell98, bytestring, transformers ==0.2.*
+  ghc-options: -Wall

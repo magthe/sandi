@@ -19,12 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 module Main
     where
 
-import Codec.Binary.DataEncoding
+-- import Codec.Binary.DataEncoding
+import Codec.Binary.Base64 as Base64
 import Data.Version (showVersion)
 import Data.Word
 import System
 import System.Console.GetOpt
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+
+import Data.ByteString.Iteratee
+import Data.ByteString.Iteratee.Internals as II
 
 import Paths_omnicodec (version)
 
@@ -32,64 +37,90 @@ ver :: String
 ver = "omnicode encode (oenc) " ++ (showVersion version)
     ++ "\nCopyright 2007-2010 Magnus Therning <magnus@therning.org>"
 
--- {{{1 Options
-data EncOptions = EncOptions {
-    optEncode :: [Word8] -> [String],
-    optRead :: IO BS.ByteString,
-    optWrite :: String -> IO ()
-    }
+-- -- {{{1 Options
+-- data EncOptions = EncOptions {
+--     optEncode :: [Word8] -> [String],
+--     optRead :: IO BS.ByteString,
+--     optWrite :: String -> IO ()
+--     }
+-- 
+-- defaultOptions :: EncOptions
+-- defaultOptions = EncOptions {
+--     optEncode = chop uu 61 . encode uu,
+--     optRead = BS.getContents,
+--     optWrite = putStr
+--     }
+-- 
+-- options :: [OptDescr (EncOptions -> IO EncOptions)]
+-- options = [
+--     Option "o" ["output"] (ReqArg setOptOutput "FILE") "output to file",
+--     Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,xx,qp,py,b85,b64,b64u,b32,b32h,b16)",
+--     Option "" ["version"] (NoArg optShowVersion) "",
+--     Option "h" ["help"] (NoArg optShowHelp) ""
+--     ]
+-- 
+-- -- {{{2 option actions
+-- setOptCodec :: String -> EncOptions -> IO EncOptions
+-- setOptCodec codec opts = case codec of
+--     "uu" -> return opts { optEncode = chop uu 61 . encode uu }
+--     "xx" -> return opts { optEncode = chop xx 61 . encode xx }
+--     "qp" -> return opts { optEncode = chop qp 60 . encode qp }
+--     "py" -> return opts { optEncode = chop py 60 . encode py }
+--     "b85" -> return opts { optEncode = chop base85 60 . encode base85 }
+--     "b64" -> return opts { optEncode = chop base64 60 . encode base64 }
+--     "b64u" -> return opts { optEncode = chop base64Url 60 . encode base64Url }
+--     "b32" -> return opts { optEncode = chop base32 60 . encode base32 }
+--     "b32h" -> return opts { optEncode = chop base32Hex 60 . encode base32Hex }
+--     "b16" -> return opts { optEncode = chop base16 60 . encode base16 }
+--     _ -> error "Unknown encoding."
+-- 
+-- setOptOutput :: FilePath -> EncOptions -> IO EncOptions
+-- setOptOutput fn opts = return opts { optWrite = writeFile fn }
+-- 
+-- optShowVersion :: EncOptions -> IO EncOptions
+-- optShowVersion _ = putStrLn ver >> exitWith ExitSuccess
+-- 
+-- optShowHelp :: EncOptions -> IO EncOptions
+-- optShowHelp _ = putStr (usageInfo "Usage:" options) >> exitWith ExitSuccess
+-- 
+-- processFileName :: [String] -> IO EncOptions
+-- processFileName (fn:_) = return defaultOptions { optRead = BS.readFile fn }
+-- processFileName _ = return defaultOptions
+-- 
+-- -- {{{1 encode
+-- _encode :: EncOptions -> BS.ByteString -> IO String
+-- _encode opts = return . unlines . optEncode opts . BS.unpack
 
-defaultOptions :: EncOptions
-defaultOptions = EncOptions {
-    optEncode = chop uu 61 . encode uu,
-    optRead = BS.getContents,
-    optWrite = putStr
-    }
+-- {{{1 encode filtee
+-- encodeFiltee :: Monad m => (EncIncData -> EncIncRes String) -> Filtee m a
+encodeFiltee enc i = Iteratee $ step enc i
+    where
+        -- step :: Monad m => (EncIncData -> EncIncRes String) -> Iteratee m a -> Stream -> m (Stepper m (Iteratee m a))
+        step enco iter Eof = let
+                (EFinal res) = enco EDone
+            in do
+                ir1 <- runIteratee iter (Chunk $ BSC.pack res)
+                case ir1 of
+                    Done a _ -> return $ Done (Iteratee $ \ _ -> return $ Done a Eof) Eof
+                    NeedAnotherChunk niter -> do
+                        ir2 <- runIteratee niter Eof
+                        case ir2 of
+                            Done a _ -> return $ Done (Iteratee $ \ _ -> return $ Done a Eof) Eof
 
-options :: [OptDescr (EncOptions -> IO EncOptions)]
-options = [
-    Option "o" ["output"] (ReqArg setOptOutput "FILE") "output to file",
-    Option "c" ["codec"] (ReqArg setOptCodec "CODEC") "use codec (uu,xx,qp,py,b85,b64,b64u,b32,b32h,b16)",
-    Option "" ["version"] (NoArg optShowVersion) "",
-    Option "h" ["help"] (NoArg optShowHelp) ""
-    ]
 
--- {{{2 option actions
-setOptCodec :: String -> EncOptions -> IO EncOptions
-setOptCodec codec opts = case codec of
-    "uu" -> return opts { optEncode = chop uu 61 . encode uu }
-    "xx" -> return opts { optEncode = chop xx 61 . encode xx }
-    "qp" -> return opts { optEncode = chop qp 60 . encode qp }
-    "py" -> return opts { optEncode = chop py 60 . encode py }
-    "b85" -> return opts { optEncode = chop base85 60 . encode base85 }
-    "b64" -> return opts { optEncode = chop base64 60 . encode base64 }
-    "b64u" -> return opts { optEncode = chop base64Url 60 . encode base64Url }
-    "b32" -> return opts { optEncode = chop base32 60 . encode base32 }
-    "b32h" -> return opts { optEncode = chop base32Hex 60 . encode base32Hex }
-    "b16" -> return opts { optEncode = chop base16 60 . encode base16 }
-    _ -> error "Unknown encoding."
-
-setOptOutput :: FilePath -> EncOptions -> IO EncOptions
-setOptOutput fn opts = return opts { optWrite = writeFile fn }
-
-optShowVersion :: EncOptions -> IO EncOptions
-optShowVersion _ = putStrLn ver >> exitWith ExitSuccess
-
-optShowHelp :: EncOptions -> IO EncOptions
-optShowHelp _ = putStr (usageInfo "Usage:" options) >> exitWith ExitSuccess
-
-processFileName :: [String] -> IO EncOptions
-processFileName (fn:_) = return defaultOptions { optRead = BS.readFile fn }
-processFileName _ = return defaultOptions
-
--- {{{1 encode
-_encode :: EncOptions -> BS.ByteString -> IO String
-_encode opts = return . unlines . optEncode opts . BS.unpack
+        step enco iter c@(Chunk bs) = let
+                (EPart ebs enco') = enco $ EChunk $ BS.unpack bs
+            in do
+                ir <- runIteratee iter (Chunk $ BSC.pack ebs)
+                case ir of
+                    Done a _ -> return $ Done (Iteratee $ \ _ -> return $ Done a (Chunk BS.empty)) (Chunk BS.empty)
+                    NeedAnotherChunk niter -> return  $ NeedAnotherChunk $ Iteratee (step enco' niter)
 
 -- {{{1 main
 main :: IO ()
 main = do
     args <- getArgs
-    let (actions, nonOpts, _) = getOpt RequireOrder options args
-    opts <- foldl (>>=) (processFileName nonOpts) actions
-    optRead opts >>= _encode opts >>= optWrite opts
+    print args
+    -- let (actions, nonOpts, _) = getOpt RequireOrder options args
+    -- opts <- foldl (>>=) (processFileName nonOpts) actions
+    -- optRead opts >>= _encode opts >>= optWrite opts
