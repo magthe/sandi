@@ -8,7 +8,8 @@ module Data.ByteString.Iteratee.Internals
     where
 
 import Data.ByteString as BS
-import Control.Monad.IO.Class
+import Control.Monad.Trans
+-- import Control.Monad.IO.Class
 
 -- | A stream is a sequence of elements, presented in @Chunk@s.  The stream,
 -- very predictably, ends with @Eof@.
@@ -31,9 +32,10 @@ newtype Iteratee m a = Iteratee
 -- reaches the 'Done' state.
 type Enumerator m a = Iteratee m a -> m (Iteratee m a)
 
--- | A filtee is both an iterator and an enumerator.  It accepts a sequence of
--- 'Stream', modifies the data, and then passes it on to the inner iteratee.
-type Filtee m a = Iteratee m a -> Iteratee m (Iteratee m a)
+-- | An enumeratee is both an iteratee and an enumerator.  It accepts a
+-- sequence of 'Stream', modifies the data, and then passes it on to the inner
+-- iteratee.
+type Enumeratee m a = Iteratee m a -> Iteratee m (Iteratee m a)
 
 instance (Monad m) => Monad (Iteratee m) where
     return x = Iteratee $ \ s -> return $ Done x s

@@ -12,7 +12,7 @@ module Data.ByteString.Iteratee
     -- * Types
       Iteratee
     , Enumerator
-    , Filtee
+    , Enumeratee
 
     -- * Enumerators
     , enumHandle
@@ -31,12 +31,16 @@ module Data.ByteString.Iteratee
     , Data.ByteString.Iteratee.drop
     , Data.ByteString.Iteratee.take
 
-    -- ** Other iteratees
+    -- ** Misc iteratees
     , applyToN
     , takeUntilDelim
 
-    -- ** Filtees
-    , idFiltee
+    -- ** Sinks
+    , sinkHandle
+    , sinkFile
+
+    -- * Enumeratees
+    , applyFun
     ) where
 
 import qualified Debug.Trace as DT
@@ -47,6 +51,8 @@ import System.IO
 import Control.Exception as CE
 import System.IO.Error
 import Data.ByteString.Iteratee.Internals as DBII
+import Control.Monad.Trans
+import System.IO
 
 run :: Monad m => Iteratee m a -> m a
 run iter = do
@@ -57,10 +63,10 @@ run iter = do
 
 -- | An enumerator of a file handle.  It uses 'hGetNonBlocking' in order to
 -- pass in available data as quickly as possible.  Seeking is not supported.
-enumHandle :: Handle -> Enumerator IO a
+enumHandle :: MonadIO m => Handle -> Enumerator m a
 enumHandle h iter = let
         tryRead i = do
-            res <- catchEof $ BS.hGetNonBlocking h 1024
+            res <- liftIO $ catchEof $ BS.hGetNonBlocking h 1024
             case res of
                 Nothing -> doStepEof i
                 Just d -> if BS.null d
@@ -71,12 +77,11 @@ enumHandle h iter = let
         doStep i d = runIteratee i (Chunk d) >>= checkIfDone tryRead
 
         waitAndRetry i = do
-            res <- catchEof $ hWaitForInput h (-1)
+            res <- liftIO $ catchEof $ hWaitForInput h (-1)
             case res of
                 Nothing -> doStepEof i
                 Just _ -> tryRead i
 
-        catchEof :: IO a -> IO (Maybe a)
         catchEof a = do
             res <- CE.try a
             case res of
@@ -222,19 +227,23 @@ takeUntilDelim d = let
 
     in step1 empty
 
--- | Iteratee that encodes all received data, saves it to a temporary file, and
--- at the end copies the temporary file to an ordinary file.
---
--- Or, create an enumeratee (which I think I'll call filtee :-)
---
--- type Filtee m a = Iteratee m a -> Iteratee m (Iteratee m a)
--- encode :: Filtee
---
--- which then is called with a fileSink :: FilePath -> Iteratee IO ()
+sinkHandle :: MonadIO m => Handle -> Iteratee m ()
+sinkHandle h = Iteratee step
+    where
+        step Eof = return $ Done () Eof
+        step (Chunk bs) = do
+            liftIO $ hPut h bs
+            return $ NeedAnotherChunk $ Iteratee step
 
--- | The identity filtee.  Useful mostly for test and as an example.
-idFiltee :: Monad m => Filtee m a
-idFiltee i = Iteratee $ step i
+sinkFile :: MonadIO m => FilePath -> Iteratee m ()
+sinkFile fp = do
+    h <- liftIO $ openBinaryFile fp ReadMode
+    sinkHandle h
+    liftIO $ hClose h
+
+-- | An enumeratee which applies a function to each chunk before passing it on.
+applyFun :: Monad m => (ByteString -> ByteString ) -> Enumeratee m a
+applyFun f i = Iteratee $ step i
     where
         step iter Eof = do
             ir <- runIteratee iter Eof
@@ -242,7 +251,7 @@ idFiltee i = Iteratee $ step i
                 Done a _ -> return $ Done (Iteratee $ \ _ -> return $ Done a Eof) Eof
 
         step iter c@(Chunk bs) = let
-                nbs = bs -- todo: modify
+                nbs = f bs
             in do
                 ir <- runIteratee iter (Chunk nbs)
                 case ir of
