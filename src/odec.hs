@@ -25,7 +25,16 @@ module Main
 import Paths_omnicodec (version)
 
 import Codec.Binary.Base64 as B64
+import qualified Codec.Binary.Base64Url as B64U
 import qualified Codec.Binary.Base32 as B32
+import qualified Codec.Binary.Base32Hex as B32H
+import qualified Codec.Binary.Base16 as B16
+import qualified Codec.Binary.Base85 as B85
+import qualified Codec.Binary.PythonString as PS
+import qualified Codec.Binary.QuotedPrintable as QP
+import qualified Codec.Binary.Url as Url
+import qualified Codec.Binary.Uu as Uu
+import qualified Codec.Binary.Xx as Xx
 import Data.ByteString.Iteratee
 import Data.ByteString.Iteratee.Internals
 
@@ -41,13 +50,22 @@ ver :: String
 ver = "omnicode decode (odec) " ++ (showVersion version)
     ++ "\nCopyright 2007-2011 Magnus Therning <magnus@therning.org>"
 
-data Codec = B64 | B32
+data Codec = B64 | B64U | B32 | B32H | B16 | B85 | PS | QP | Url | Uu | Xx
     deriving(Show, Eq, Data, Typeable)
 
 codecMap :: [(Codec, DecIncData String -> DecIncRes String)]
 codecMap =
     [ (B64, B64.decodeInc)
+    , (B64U, B64U.decodeInc)
     , (B32, B32.decodeInc)
+    , (B32H, B32H.decodeInc)
+    , (B16, B16.decodeInc)
+    , (B85, B85.decodeInc)
+    , (PS, PS.decodeInc)
+    , (QP, QP.decodeInc)
+    , (Url, Url.decodeInc)
+    , (Uu, Uu.decodeInc)
+    , (Xx, Xx.decodeInc)
     ]
 
 data MyArgs = MyArgs { argInput :: Maybe FilePath, argOutput :: Maybe FilePath, argCodec :: Codec }
@@ -57,8 +75,21 @@ myArgs :: MyArgs
 myArgs = MyArgs
     { argInput = Nothing &= name "i" &= name "in" &= explicit &= typFile &= help "read encoded data from file"
     , argOutput = Nothing &= name "o" &= name "out" &= explicit &= typFile &= help "write decoded data to file"
-    , argCodec = B64 &= name "c" &= name "codec" &= explicit &= typ "CODEC" &= help "codec b64, b32 (b64)"
-    } &= summary ver
+    , argCodec = B64 &= name "c" &= name "codec" &= explicit &= typ "CODEC" &= help "codec b64, b64u, b32, b32h, b16, b85, ps, qp, url, uu, xx (b64)"
+    } &= summary ver &= details
+        [ "Decoder tool for multiple encodings:"
+        , " b64  - base64 (default)"
+        , " b64u - base64url"
+        , " b32  - base32"
+        , " b32h - base32hex"
+        , " b16  - base16"
+        , " b85  - base85"
+        , " ps   - python string escaping"
+        , " qp   - quoted printable"
+        , " url  - url encoding"
+        , " uu   - uu encoding"
+        , " xx   - xx encoding"
+        ]
 
 -- {{{1 decode enumeratee
 decEnumeratee :: Monad m => (DecIncData String -> DecIncRes String) -> Enumeratee m a
