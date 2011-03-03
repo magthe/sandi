@@ -22,5 +22,5 @@ executable oenc
   main-is: oenc.hs
   hs-source-dirs: src
   build-depends: base >= 4.0.0 && < 4.3, dataenc >= 0.13, directory, filepath,
-      haskell98, bytestring, transformers ==0.2.*
+      haskell98, bytestring, mtl ==1.1.*, cmdargs ==0.6.*
   ghc-options: -Wall
