@@ -63,21 +63,21 @@ enumEof iter = do
 enumPure1Chunk :: Monad m => ByteString -> Enumerator m a
 enumPure1Chunk bs iter = run bs iter
     where
-        run bs i
-            | BS.null bs = runIteratee i Eof >>= checkIfDone return
-            | otherwise = runIteratee i (Chunk bs) >>= checkIfDone (run empty)
+        run bs' i
+            | BS.null bs' = runIteratee i Eof >>= checkIfDone return
+            | otherwise = runIteratee i (Chunk bs') >>= checkIfDone (run empty)
 
 -- | An enumerator which passes the given string, chopped up into the given
 -- length, in a stream of 'Chunk's.
 enumPureManyChunk :: Monad m => ByteString -> Int -> Enumerator m a
 enumPureManyChunk bs n iter = run bs n iter
     where
-        run bs n i
-            | BS.null bs = runIteratee i Eof >>= checkIfDone return
-            | n > 0 = let
-                    (p1, p2) = BS.splitAt n bs
-                in runIteratee i (Chunk p1) >>= checkIfDone (run p2 n)
-            | otherwise = error $ "enumPureManyChunk: called with n=" ++ show n
+        run bs' n' i
+            | BS.null bs' = runIteratee i Eof >>= checkIfDone return
+            | n' > 0 = let
+                    (p1, p2) = BS.splitAt n' bs'
+                in runIteratee i (Chunk p1) >>= checkIfDone (run p2 n')
+            | otherwise = error $ "enumPureManyChunk: called with n'=" ++ show n'
 
 -- | Useful function for defining enumerators.  See source for 'enumPure1Chunk'
 -- for example of usage.

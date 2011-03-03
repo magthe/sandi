@@ -43,8 +43,6 @@ module Data.ByteString.Iteratee
     , applyFun
     ) where
 
-import qualified Debug.Trace as DT
-
 import Data.ByteString as BS
 import Data.Word
 import System.IO
@@ -52,7 +50,6 @@ import Control.Exception as CE
 import System.IO.Error
 import Data.ByteString.Iteratee.Internals as DBII
 import Control.Monad.Trans
-import System.IO
 
 run :: Monad m => Iteratee m a -> m a
 run iter = do
@@ -113,8 +110,8 @@ heads l = Iteratee $ step 0 l
     where
         step a _ Eof = return $ Done a Eof
         step a [] s = return $ Done a s
-        step a l@(w:ws) s@(Chunk bs) = if BS.null bs
-            then return $ NeedAnotherChunk $ Iteratee $ step a l
+        step a l'@(w:ws) s@(Chunk bs) = if BS.null bs
+            then return $ NeedAnotherChunk $ Iteratee $ step a l'
             else if w == BS.head bs
                 then step (succ a) ws (Chunk $ BS.tail bs)
                 else return $ Done a s
@@ -145,7 +142,7 @@ dropWhile test = Iteratee step
     where
         step Eof = return $ Done () Eof
         step (Chunk bs) = let
-                (p1,p2) = BS.span test bs
+                (_, p2) = BS.span test bs
             in if BS.null p2
                 then return $ NeedAnotherChunk $ Data.ByteString.Iteratee.dropWhile test
                 else return $ Done () (Chunk p2)
@@ -168,7 +165,7 @@ drop :: Monad m => Int -> Iteratee m ()
 drop n = Iteratee $ step n
     where
         step 0 s = return $ Done () s
-        step i Eof = return $ Done () Eof
+        step _ Eof = return $ Done () Eof
         step i (Chunk bs) = let
                 (p1, p2) = BS.splitAt i bs
                 l1 = BS.length p1
@@ -205,6 +202,7 @@ applyToN n iter = let
             | BS.null bs = Eof -- local take will return empty on EOF, so keep it
             | otherwise = c
         combineChunks (Chunk lbs) (Chunk rbs) = Chunk $ lbs `append` rbs
+        combineChunks Eof _ = error "applyToN: internal error"
 
     in wrap (Data.ByteString.Iteratee.take n)
 
@@ -249,8 +247,9 @@ applyFun f i = Iteratee $ step i
             ir <- runIteratee iter Eof
             case ir of
                 Done a _ -> return $ Done (Iteratee $ \ _ -> return $ Done a Eof) Eof
+                NeedAnotherChunk _ -> error "applyFun: internal iteratee diverges on Eof"
 
-        step iter c@(Chunk bs) = let
+        step iter (Chunk bs) = let
                 nbs = f bs
             in do
                 ir <- runIteratee iter (Chunk nbs)

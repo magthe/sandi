@@ -44,6 +44,7 @@ ver = "omnicode decode (odec) " ++ (showVersion version)
 data Codec = B64 | B32
     deriving(Show, Eq, Data, Typeable)
 
+codecMap :: [(Codec, DecIncData String -> DecIncRes String)]
 codecMap =
     [ (B64, B64.decodeInc)
     , (B32, B32.decodeInc)
