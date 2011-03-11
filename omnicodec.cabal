@@ -1,5 +1,5 @@
 name: omnicodec
-version: 0.5
+version: 0.5.0.1
 license: GPL
 license-file: COPYING
 author: Magnus Therning
@@ -14,8 +14,8 @@ cabal-version: >= 1.6
 executable odec
     main-is: odec.hs
     hs-source-dirs: src
-    build-depends: base ==4.2.*, cmdargs ==0.6.*, bytestring ==0.9.*,
-        mtl ==1.1.*, dataenc ==0.14.*
+    build-depends: base ==4.3.*, cmdargs ==0.6.*, bytestring ==0.9.*,
+        mtl ==2.0.*, dataenc ==0.14.*
     ghc-options: -Wall
 
 executable oenc
