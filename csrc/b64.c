@@ -5,7 +5,7 @@
 
 static char const alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-void b64_encode(uint8_t const *src, size_t srclen,
+void b64_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
@@ -33,7 +33,7 @@ void b64_encode(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int b64_finalize(uint8_t const *src, size_t srclen,
+int b64_enc_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src);

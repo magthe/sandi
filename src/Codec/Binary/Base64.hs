@@ -1,7 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Codec.Binary.Base64
-    ( b64_encode
-    , b64_finalize
+    ( b64encode_part
+    , b64encode_final
     ) where
 
 import Foreign
@@ -15,20 +15,20 @@ import System.IO.Unsafe as U
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static b64.h b64_encode"
-    c_b64_encode :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
+foreign import ccall "static b64.h b64_enc_part"
+    c_b64_enc_part :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static b64.h b64_finalize"
-    c_b64_finalize :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
+foreign import ccall "static b64.h b64_enc_final"
+    c_b64_enc_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
-b64_encode :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b64_encode bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b64encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                c_b64_encode (castPtr inBuf) (castEnum inLen)
+                c_b64_enc_part (castPtr inBuf) (castEnum inLen)
                     outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 remBuf <- peek pRemBuf
@@ -37,10 +37,12 @@ b64_encode bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) 
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return (outBs, remBs)
 
-b64_finalize bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+-- todo: there is unnecessary memory used when the bytestring passed in is of length 0
+b64encode_final :: BS.ByteString -> Maybe BS.ByteString
+b64encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
-        r <- c_b64_finalize (castPtr inBuf) (castEnum inLen) outBuf pOutLen
+        r <- c_b64_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
         if r /= 0
             then return Nothing
             else do
