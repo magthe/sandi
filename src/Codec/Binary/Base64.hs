@@ -4,6 +4,8 @@ module Codec.Binary.Base64
     , b64encode_final
     , b64decode_part
     , b64decode_final
+    , encode
+    , decode
     ) where
 
 import Foreign
@@ -89,3 +91,19 @@ b64decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
                 outLen <- peek pOutLen
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return $ Just outBs
+
+encode :: BS.ByteString -> BS.ByteString
+encode bs = let
+        (first, rest) = b64encode_part bs
+        Just fin = b64encode_final rest
+    in if BS.null bs
+        then BS.empty
+        else first `BS.append` fin
+
+decode :: BS.ByteString -> BS.ByteString
+decode bs = let
+        Right (first, rest) = b64decode_part bs
+        Just fin = b64decode_final rest
+    in if BS.null bs
+        then BS.empty
+        else first `BS.append` fin
