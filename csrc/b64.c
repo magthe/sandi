@@ -3,7 +3,7 @@
 
 #include "b64.h"
 
-static char const alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static char const encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 void b64_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -23,10 +23,10 @@ void b64_enc_part(uint8_t const *src, size_t srclen,
         o1 = ((src[i] << 4) | (src[i+1] >> 4)) & 0x3f;
         o2 = ((src[i+1] << 2) | (src[i+2] >> 6)) & 0x3f;
         o3 = src[i+2] & 0x3f;
-        *dst++ = alphabet[o0];
-        *dst++ = alphabet[o1];
-        *dst++ = alphabet[o2];
-        *dst++ = alphabet[o3];
+        *dst++ = encmap[o0];
+        *dst++ = encmap[o1];
+        *dst++ = encmap[o2];
+        *dst++ = encmap[o3];
     }
 
     *rem = src + i;
@@ -49,8 +49,8 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
     case 1:
         o0 = src[0] >> 2;
         o1 = (src[0] << 4) & 0x3f;
-        *dst++ = alphabet[o0];
-        *dst++ = alphabet[o1];
+        *dst++ = encmap[o0];
+        *dst++ = encmap[o1];
         *dst++ = '=';
         *dst++ = '=';
         *dstlen = 4;
@@ -60,9 +60,9 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
         o0 = src[0] >> 2;
         o1 = ((src[0] << 4) | (src[1] >> 4)) & 0x3f;
         o2 = (src[1] << 2) & 0x3f;
-        *dst++ = alphabet[o0];
-        *dst++ = alphabet[o1];
-        *dst++ = alphabet[o2];
+        *dst++ = encmap[o0];
+        *dst++ = encmap[o1];
+        *dst++ = encmap[o2];
         *dst++ = '=';
         *dstlen = 4;
         return(0);
