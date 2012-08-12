@@ -100,10 +100,14 @@ encode bs = let
         then BS.empty
         else first `BS.append` fin
 
-decode :: BS.ByteString -> BS.ByteString
-decode bs = let
-        Right (first, rest) = b64decode_part bs
-        Just fin = b64decode_final rest
-    in if BS.null bs
-        then BS.empty
-        else first `BS.append` fin
+decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
+decode bs = if BS.null bs
+        then Right BS.empty
+        else either
+            Left
+            (\ (first, rest) ->
+                maybe
+                    (Left (first, rest))
+                    (\ fin -> Right (first `BS.append` fin))
+                    (b64decode_final rest))
+            (b64decode_part bs)
