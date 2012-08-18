@@ -1,9 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Codec.Binary.Base64
-    ( b64encode_part
-    , b64encode_final
-    , b64decode_part
-    , b64decode_final
+    ( b64_encode_part
+    , b64_encode_final
+    , b64_decode_part
+    , b64_decode_final
     , encode
     , decode
     ) where
@@ -31,8 +31,8 @@ foreign import ccall "static b64.h b64_dec_part"
 foreign import ccall "static b64.h b64_dec_final"
     c_b64_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
-b64encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b64encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b64_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -48,8 +48,8 @@ b64encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
                 return (outBs, remBs)
 
 -- todo: there is unnecessary memory used when the bytestring passed in is of length 0
-b64encode_final :: BS.ByteString -> Maybe BS.ByteString
-b64encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64_encode_final :: BS.ByteString -> Maybe BS.ByteString
+b64_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_b64_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -61,8 +61,8 @@ b64encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
                 return $ Just outBs
 
 -- todo: too much memory is used when there's an error
-b64decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b64decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b64_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -80,8 +80,8 @@ b64decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
                     else return $ Left (outBs, remBs)
 
 -- todo: too much memory is used when 0 or 1 byte is encoded
-b64decode_final :: BS.ByteString -> Maybe BS.ByteString
-b64decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64_decode_final :: BS.ByteString -> Maybe BS.ByteString
+b64_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 2
     alloca $ \ pOutLen -> do
         r <- c_b64_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -94,20 +94,16 @@ b64decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 
 encode :: BS.ByteString -> BS.ByteString
 encode bs = let
-        (first, rest) = b64encode_part bs
-        Just fin = b64encode_final rest
-    in if BS.null bs
-        then BS.empty
-        else first `BS.append` fin
+        (first, rest) = b64_encode_part bs
+        Just final = b64_encode_final rest
+    in first `BS.append` final
 
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = if BS.null bs
-        then Right BS.empty
-        else either
-            Left
-            (\ (first, rest) ->
-                maybe
-                    (Left (first, rest))
-                    (\ fin -> Right (first `BS.append` fin))
-                    (b64decode_final rest))
-            (b64decode_part bs)
+decode bs = either
+    Left
+    (\ (first, rest) ->
+        maybe
+            (Left (first, rest))
+            (\ fin -> Right (first `BS.append` fin))
+            (b64_decode_final rest))
+    (b64_decode_part bs)

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <assert.h>
 
 #include "b64.h"
@@ -11,7 +10,7 @@ void b64_enc_part(uint8_t const *src, size_t srclen,
 {
     size_t i;
 
-    assert(src);
+    assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
@@ -36,7 +35,7 @@ void b64_enc_part(uint8_t const *src, size_t srclen,
 int b64_enc_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
-    assert(src);
+    assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
 
@@ -100,7 +99,7 @@ int b64_dec_part(uint8_t const *src, size_t srclen,
     size_t i;
     int res = 0;
 
-    assert(src);
+    assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
@@ -136,6 +135,10 @@ int b64_dec_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     uint8_t o0, o1, o2, o3, all;
+
+    assert(src || 0 == srclen);
+    assert(dst);
+    assert(dstlen);
 
     if(0 == srclen) {
         *dstlen = 0;
