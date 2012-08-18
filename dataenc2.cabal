@@ -14,11 +14,12 @@ description: Reasonably fast data encoding library currently providing Base64.
 
 library
     hs-source-dirs: src
-    c-sources: csrc/b64.c
+    c-sources: csrc/b64.c csrc/b64url.c
     include-dirs: csrc
     build-depends: base ==4.5.*, bytestring ==0.9.*
     exposed-modules:
             Codec.Binary.Base64
+            Codec.Binary.Base64Url
 
 executable tests
     main-is: Main.hs
