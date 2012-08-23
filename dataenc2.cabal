@@ -11,6 +11,7 @@ copyright: Magnus Therning, 2012
 category: Codec
 synopsis: Data encoding library
 description: Reasonably fast data encoding library currently providing Base64.
+extra-source-files: csrc/b64.h csrc/b64url.h csrc/b32.h
 
 library
     hs-source-dirs: src
