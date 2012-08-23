@@ -9,6 +9,7 @@ import Data.ByteString
 import qualified Codec.Binary.Base64 as B64
 import qualified Codec.Binary.Base64Url as B64U
 import qualified Codec.Binary.Base32 as B32
+import qualified Codec.Binary.Base32Hex as B32H
 
 -- {{{1 base64
 case_b64encode = do
@@ -80,6 +81,27 @@ case_b32decode = do
     (Right $ pack [102,111,111,98]) @=? (B32.decode $ pack [77,90,88,87,54,89,81,61])
     (Right $ pack [102,111,111,98,97]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66])
     (Right $ pack [102,111,111,98,97,114]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61])
+
+-- {{{1 base32hex
+case_b32hencode = do
+    -- foobar
+    empty @=? B32H.encode empty 
+    pack [67,79,61,61,61,61,61,61] @=? (B32H.encode $ pack [102])
+    pack [67,80,78,71,61,61,61,61] @=? (B32H.encode $ pack [102,111])
+    pack [67,80,78,77,85,61,61,61] @=? (B32H.encode $ pack [102,111,111])
+    pack [67,80,78,77,85,79,71,61] @=? (B32H.encode $ pack [102,111,111,98])
+    pack [67,80,78,77,85,79,74,49] @=? (B32H.encode $ pack [102,111,111,98,97])
+    pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61] @=? (B32H.encode $ pack [102,111,111,98,97,114])
+
+case_b32hdecode = do
+    -- foobar
+    Right empty @=? B32H.decode empty 
+    (Right $ pack [102]) @=? (B32H.decode $ pack [67,79,61,61,61,61,61,61])
+    (Right $ pack [102,111]) @=? (B32H.decode $ pack [67,80,78,71,61,61,61,61])
+    (Right $ pack [102,111,111]) @=? (B32H.decode $ pack [67,80,78,77,85,61,61,61])
+    (Right $ pack [102,111,111,98]) @=? (B32H.decode $ pack [67,80,78,77,85,79,71,61])
+    (Right $ pack [102,111,111,98,97]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61])
 
 -- {{{1 tests & main
 tests = [$(testGroupGenerator)]

@@ -11,17 +11,18 @@ copyright: Magnus Therning, 2012
 category: Codec
 synopsis: Data encoding library
 description: Reasonably fast data encoding library currently providing Base64.
-extra-source-files: csrc/b64.h csrc/b64url.h csrc/b32.h
+extra-source-files: csrc/b64.h csrc/b64url.h csrc/b32.h csrc/b32hex.h
 
 library
     hs-source-dirs: src
-    c-sources: csrc/b64.c csrc/b64url.c csrc/b32.c
+    c-sources: csrc/b64.c csrc/b64url.c csrc/b32.c csrc/b32hex.c
     include-dirs: csrc
     build-depends: base ==4.5.*, bytestring ==0.9.*
     exposed-modules:
             Codec.Binary.Base64
             Codec.Binary.Base64Url
             Codec.Binary.Base32
+            Codec.Binary.Base32Hex
 
 executable tests
     main-is: Main.hs
