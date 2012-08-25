@@ -12,10 +12,12 @@ category: Codec
 synopsis: Data encoding library
 description: Reasonably fast data encoding library currently providing Base64.
 extra-source-files: csrc/b64.h csrc/b64url.h csrc/b32.h csrc/b32hex.h
+    csrc/uu.h
 
 library
     hs-source-dirs: src
     c-sources: csrc/b64.c csrc/b64url.c csrc/b32.c csrc/b32hex.c
+        csrc/uu.c
     include-dirs: csrc
     build-depends: base ==4.5.*, bytestring ==0.9.*
     exposed-modules:
@@ -23,6 +25,7 @@ library
             Codec.Binary.Base64Url
             Codec.Binary.Base32
             Codec.Binary.Base32Hex
+            Codec.Binary.Uu
 
 executable tests
     main-is: Main.hs
