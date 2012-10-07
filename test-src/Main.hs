@@ -11,6 +11,7 @@ import qualified Codec.Binary.Base64Url as B64U
 import qualified Codec.Binary.Base32 as B32
 import qualified Codec.Binary.Base32Hex as B32H
 import qualified Codec.Binary.Uu as Uu
+import qualified Codec.Binary.Xx as Xx
 
 -- {{{1 base64
 case_b64encode = do
@@ -124,6 +125,27 @@ case_uudecode = do
     (Right $ pack [102,111,111,98]) @=? (Uu.decode $ pack [57,70,93,79,56,64])
     (Right $ pack [102,111,111,98,97]) @=? (Uu.decode $ pack [57,70,93,79,56,70,36])
     (Right $ pack [102,111,111,98,97,114]) @=? (Uu.decode $ pack [57,70,93,79,56,70,37,82])
+
+-- {{{1 xx
+case_xxencode = do
+    -- foobar
+    empty @=? Xx.encode empty
+    pack [78,85] @=? (Xx.encode $ pack [102])
+    pack [78,97,119] @=? (Xx.encode $ pack [102,111])
+    pack [78,97,120,106] @=? (Xx.encode $ pack [102,111,111])
+    pack [78,97,120,106,77,85] @=? (Xx.encode $ pack [102,111,111,98])
+    pack [78,97,120,106,77,97,50] @=? (Xx.encode $ pack [102,111,111,98,97])
+    pack [78,97,120,106,77,97,51,109] @=? (Xx.encode $ pack [102,111,111,98,97,114])
+
+case_xxdecode = do
+    -- foobar
+    Right empty @=? Xx.decode empty
+    (Right $ pack [102]) @=? (Xx.decode $ pack [78,85])
+    (Right $ pack [102,111]) @=? (Xx.decode $ pack [78,97,119])
+    (Right $ pack [102,111,111]) @=? (Xx.decode $ pack [78,97,120,106])
+    (Right $ pack [102,111,111,98]) @=? (Xx.decode $ pack [78,97,120,106,77,85])
+    (Right $ pack [102,111,111,98,97]) @=? (Xx.decode $ pack [78,97,120,106,77,97,50])
+    (Right $ pack [102,111,111,98,97,114]) @=? (Xx.decode $ pack [78,97,120,106,77,97,51,109])
 
 -- {{{1 tests & main
 tests = [$(testGroupGenerator)]
