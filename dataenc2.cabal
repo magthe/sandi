@@ -11,26 +11,46 @@ copyright: Magnus Therning, 2012
 category: Codec
 synopsis: Data encoding library
 description: Reasonably fast data encoding library currently providing Base64.
-extra-source-files: csrc/b64.h csrc/b64url.h csrc/b32.h csrc/b32hex.h
-    csrc/uu.h csrc/xx.h
+extra-source-files:
+    csrc/b85.h
+    csrc/b32.h
+    csrc/b32hex.h
+    csrc/b64.h
+    csrc/b64url.h
+    csrc/uu.h
+    csrc/xx.h
 
 library
     hs-source-dirs: src
-    c-sources: csrc/b64.c csrc/b64url.c csrc/b32.c csrc/b32hex.c
-        csrc/uu.c csrc/xx.c
+    c-sources:
+        csrc/b32.c
+        csrc/b32hex.c
+        csrc/b64.c
+        csrc/b64url.c
+        csrc/b85.c
+        csrc/uu.c
+        csrc/xx.c
     include-dirs: csrc
-    build-depends: base ==4.6.*, bytestring ==0.10.*
+    build-depends:
+        base ==4.6.*,
+        bytestring ==0.10.*
     exposed-modules:
-            Codec.Binary.Base64
-            Codec.Binary.Base64Url
             Codec.Binary.Base32
             Codec.Binary.Base32Hex
+            Codec.Binary.Base64
+            Codec.Binary.Base64Url
+            Codec.Binary.Base85
             Codec.Binary.Uu
             Codec.Binary.Xx
 
 executable tests
     main-is: Main.hs
     hs-source-dirs: test-src
-    build-depends: dataenc2, base ==4.6.*, bytestring ==0.10.*, HUnit ==1.2.*,
-        test-framework-th ==0.2.*, test-framework ==0.6.*,
+    build-depends:
+        dataenc2,
+        base ==4.6.*,
+        bytestring ==0.10.*,
+        HUnit ==1.2.*,
+        test-framework-th ==0.2.*,
+        test-framework ==0.6.*,
         test-framework-hunit ==0.2.*

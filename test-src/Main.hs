@@ -6,12 +6,42 @@ import Test.Framework.TH
 import Test.Framework.Providers.HUnit
 import Test.HUnit
 import Data.ByteString
+import qualified Codec.Binary.Base85 as B85
 import qualified Codec.Binary.Base64 as B64
 import qualified Codec.Binary.Base64Url as B64U
 import qualified Codec.Binary.Base32 as B32
 import qualified Codec.Binary.Base32Hex as B32H
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
+
+-- {{{1 base85
+case_b85encode = do
+    -- foobar
+    empty @=? B85.encode empty
+    pack [65,99] @=? (B85.encode $ pack [102])
+    pack [65,111,64] @=? (B85.encode $ pack [102,111])
+    pack [65,111,68,83] @=? (B85.encode $ pack [102,111,111])
+    pack [65,111,68,84,115] @=? (B85.encode $ pack [102,111,111,98])
+    pack [65,111,68,84,115,64,47] @=? (B85.encode $ pack [102,111,111,98,97])
+    pack [65,111,68,84,115,64,60,41] @=? (B85.encode $ pack [102,111,111,98,97,114])
+    -- all zero
+    -- pack [122] @=? (B85.encode $ pack [0,0,0,0])
+    -- all space
+    -- pack [121] @=? (B85.encode $ pack [32,32,32,32])
+
+case_b85decode = do
+    -- foobar
+    Right empty @=? B85.decode empty
+    (Right $ pack [102]) @=? (B85.decode $ pack [65,99])
+    (Right $ pack [102,111]) @=? (B85.decode $ pack [65,111,64])
+    (Right $ pack [102,111,111]) @=? (B85.decode $ pack [65,111,68,83])
+    (Right $ pack [102,111,111,98]) @=? (B85.decode $ pack [65,111,68,84,115])
+    (Right $ pack [102,111,111,98,97]) @=? (B85.decode $ pack [65,111,68,84,115,64,47])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B85.decode $ pack [65,111,68,84,115,64,60,41])
+    -- all zero
+    -- (Right $ pack [0,0,0,0]) @=? (B85.decode $ pack [122])
+    -- all space
+    -- (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
 
 -- {{{1 base64
 case_b64encode = do
