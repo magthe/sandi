@@ -13,6 +13,7 @@ import qualified Codec.Binary.Base32 as B32
 import qualified Codec.Binary.Base32Hex as B32H
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
+import qualified Codec.Binary.Yenc as Y
 
 -- {{{1 base85
 case_b85encode = do
@@ -180,6 +181,37 @@ case_xxdecode = do
     (Right $ pack [102,111,111,98]) @=? (Xx.decode $ pack [78,97,120,106,77,85])
     (Right $ pack [102,111,111,98,97]) @=? (Xx.decode $ pack [78,97,120,106,77,97,50])
     (Right $ pack [102,111,111,98,97,114]) @=? (Xx.decode $ pack [78,97,120,106,77,97,51,109])
+
+-- {{{1 yenc
+case_yenc_encode = do
+    -- foobar
+    empty @=? Y.encode empty
+    pack [144] @=? (Y.encode $ pack [102])
+    pack [144,153] @=? (Y.encode $ pack [102,111])
+    pack [144,153,153] @=? (Y.encode $ pack [102,111,111])
+    pack [144,153,153,140] @=? (Y.encode $ pack [102,111,111,98])
+    pack [144,153,153,140,139] @=? (Y.encode $ pack [102,111,111,98,97])
+    pack [144,153,153,140,139,156] @=? (Y.encode $ pack [102,111,111,98,97,114])
+    -- expanded chars
+    pack [61,64] @=? (Y.encode $ pack [214])
+    pack [61,74] @=? (Y.encode $ pack [224])
+    pack [61,77] @=? (Y.encode $ pack [227])
+    pack [61,125] @=? (Y.encode $ pack [19])
+
+case_yenc_decode = do
+    -- foobar
+    Right empty @=? Y.decode empty
+    (Right $ pack [102]) @=? (Y.decode $ pack [144])
+    (Right $ pack [102,111]) @=? (Y.decode $ pack [144,153])
+    (Right $ pack [102,111,111]) @=? (Y.decode $ pack [144,153,153])
+    (Right $ pack [102,111,111,98]) @=? (Y.decode $ pack [144,153,153,140])
+    (Right $ pack [102,111,111,98,97]) @=? (Y.decode $ pack [144,153,153,140,139])
+    (Right $ pack [102,111,111,98,97,114]) @=? (Y.decode $ pack [144,153,153,140,139,156])
+    -- expanded chars
+    (Right $ pack [214]) @=? (Y.decode $ pack [61,64])
+    (Right $ pack [224]) @=? (Y.decode $ pack [61,74])
+    (Right $ pack [227]) @=? (Y.decode $ pack [61,77])
+    (Right $ pack [19]) @=? (Y.decode $ pack [61,125])
 
 -- {{{1 tests & main
 tests = [$(testGroupGenerator)]

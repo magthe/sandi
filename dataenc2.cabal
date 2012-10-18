@@ -19,6 +19,7 @@ extra-source-files:
     csrc/b64url.h
     csrc/uu.h
     csrc/xx.h
+    csrc/yenc.h
 
 library
     hs-source-dirs: src
@@ -30,6 +31,7 @@ library
         csrc/b85.c
         csrc/uu.c
         csrc/xx.c
+        csrc/yenc.c
     include-dirs: csrc
     build-depends:
         base ==4.6.*,
@@ -42,6 +44,7 @@ library
             Codec.Binary.Base85
             Codec.Binary.Uu
             Codec.Binary.Xx
+            Codec.Binary.Yenc
 
 executable tests
     main-is: Main.hs
