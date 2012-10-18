@@ -25,9 +25,11 @@ case_b85encode = do
     pack [65,111,68,84,115,64,47] @=? (B85.encode $ pack [102,111,111,98,97])
     pack [65,111,68,84,115,64,60,41] @=? (B85.encode $ pack [102,111,111,98,97,114])
     -- all zero
-    -- pack [122] @=? (B85.encode $ pack [0,0,0,0])
+    pack [122] @=? (B85.encode $ pack [0,0,0,0])
     -- all space
-    -- pack [121] @=? (B85.encode $ pack [32,32,32,32])
+    pack [121] @=? (B85.encode $ pack [32,32,32,32])
+    -- double special
+    pack [121,122] @=? (B85.encode $ pack [32,32,32,32,0,0,0,0])
 
 case_b85decode = do
     -- foobar
@@ -39,9 +41,11 @@ case_b85decode = do
     (Right $ pack [102,111,111,98,97]) @=? (B85.decode $ pack [65,111,68,84,115,64,47])
     (Right $ pack [102,111,111,98,97,114]) @=? (B85.decode $ pack [65,111,68,84,115,64,60,41])
     -- all zero
-    -- (Right $ pack [0,0,0,0]) @=? (B85.decode $ pack [122])
+    (Right $ pack [0,0,0,0]) @=? (B85.decode $ pack [122])
     -- all space
-    -- (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
+    (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
+    -- double special
+    (Right $ pack [32,32,32,32,0,0,0,0]) @=? (B85.decode $ pack [121,122])
 
 -- {{{1 base64
 case_b64encode = do

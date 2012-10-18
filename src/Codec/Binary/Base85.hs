@@ -1,12 +1,12 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Codec.Binary.Base85
-    ( b85_encode_part
-    , b85_encode_final
-    , b85_decode_part
-    , b85_decode_final
-    , encode
-    , decode
-    ) where
+   ( b85_encode_part
+   , b85_encode_final
+   , b85_decode_part
+   , b85_decode_final
+   , encode
+   , decode
+   ) where
 
 import qualified Data.ByteString as BS
 import Foreign
@@ -36,8 +36,8 @@ b85_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                c_b85_enc_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                c_b85_enc_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
@@ -59,11 +59,12 @@ b85_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 
 b85_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 b85_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    let maxOutLen = inLen `div` 5 * 4
+    let maxOutLen = max 4 $ inLen `div` 5 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
+                poke pOutLen (castEnum maxOutLen)
                 r <- c_b85_dec_part (castPtr inBuf) (castEnum inLen)
                     outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
@@ -90,19 +91,24 @@ b85_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 encode :: BS.ByteString -> BS.ByteString
 encode bs = let
         (first, rest) = b85_encode_part bs
-        Just fin = b85_encode_final rest
-    in if BS.null bs
-        then BS.empty
-        else first `BS.append` fin
+        Just final = b85_encode_final rest
+    in first `BS.append` final
 
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = if BS.null bs
-        then Right BS.empty
-        else either
+decode bs = let
+        iterateDecode bss rem = case b85_decode_part rem of
+            Right (d, r) ->
+                if BS.null d
+                    then Right (BS.concat (reverse bss), r)
+                    else iterateDecode (d : bss) r
+            Left (d, r) -> Left (BS.concat $ reverse $ d : bss, r)
+
+        handleFinal a@(first, rest) = maybe
+            (Left a)
+            (\ final -> Right (first `BS.append` final))
+            (b85_decode_final rest)
+
+    in either
             Left
-            (\ (first, rest) ->
-                maybe
-                    (Left (first, rest))
-                    (\ fin -> Right (first `BS.append` fin))
-                    (b85_decode_final rest))
-            (b85_decode_part bs)
+            handleFinal
+            (iterateDecode [] bs)
