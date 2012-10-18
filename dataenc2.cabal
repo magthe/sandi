@@ -10,7 +10,8 @@ homepage: http://to.be.added/
 copyright: Magnus Therning, 2012
 category: Codec
 synopsis: Data encoding library
-description: Reasonably fast data encoding library currently providing Base64.
+description: Reasonably fast data encoding library currently providing
+    multiple data encodings.
 extra-source-files:
     csrc/b85.h
     csrc/b32.h
