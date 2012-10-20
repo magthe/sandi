@@ -10,47 +10,78 @@ import Test.Framework.TH
 import Test.Framework.Providers.HUnit
 import Test.HUnit
 import Data.ByteString
-import qualified Codec.Binary.Base85 as B85
-import qualified Codec.Binary.Base64 as B64
-import qualified Codec.Binary.Base64Url as B64U
+import qualified Codec.Binary.Base16 as B16
 import qualified Codec.Binary.Base32 as B32
 import qualified Codec.Binary.Base32Hex as B32H
+import qualified Codec.Binary.Base64 as B64
+import qualified Codec.Binary.Base64Url as B64U
+import qualified Codec.Binary.Base85 as B85
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Yenc as Y
 
--- {{{1 base85
-case_b85encode = do
+-- {{{1 base16
+case_b16encode = do
     -- foobar
-    empty @=? B85.encode empty
-    pack [65,99] @=? (B85.encode $ pack [102])
-    pack [65,111,64] @=? (B85.encode $ pack [102,111])
-    pack [65,111,68,83] @=? (B85.encode $ pack [102,111,111])
-    pack [65,111,68,84,115] @=? (B85.encode $ pack [102,111,111,98])
-    pack [65,111,68,84,115,64,47] @=? (B85.encode $ pack [102,111,111,98,97])
-    pack [65,111,68,84,115,64,60,41] @=? (B85.encode $ pack [102,111,111,98,97,114])
-    -- all zero
-    pack [122] @=? (B85.encode $ pack [0,0,0,0])
-    -- all space
-    pack [121] @=? (B85.encode $ pack [32,32,32,32])
-    -- double special
-    pack [121,122] @=? (B85.encode $ pack [32,32,32,32,0,0,0,0])
+    empty @=? B16.encode empty
+    pack [54,54] @=? (B16.encode $ pack [102])
+    pack [54,54,54,70] @=? (B16.encode $ pack [102,111])
+    pack [54,54,54,70,54,70] @=? (B16.encode $ pack [102,111,111])
+    pack [54,54,54,70,54,70,54,50] @=? (B16.encode $ pack [102,111,111,98])
+    pack [54,54,54,70,54,70,54,50,54,49] @=? (B16.encode $ pack [102,111,111,98,97])
+    pack [54,54,54,70,54,70,54,50,54,49,55,50] @=? (B16.encode $ pack [102,111,111,98,97,114])
 
-case_b85decode = do
+case_b16decode = do
     -- foobar
-    Right empty @=? B85.decode empty
-    (Right $ pack [102]) @=? (B85.decode $ pack [65,99])
-    (Right $ pack [102,111]) @=? (B85.decode $ pack [65,111,64])
-    (Right $ pack [102,111,111]) @=? (B85.decode $ pack [65,111,68,83])
-    (Right $ pack [102,111,111,98]) @=? (B85.decode $ pack [65,111,68,84,115])
-    (Right $ pack [102,111,111,98,97]) @=? (B85.decode $ pack [65,111,68,84,115,64,47])
-    (Right $ pack [102,111,111,98,97,114]) @=? (B85.decode $ pack [65,111,68,84,115,64,60,41])
-    -- all zero
-    (Right $ pack [0,0,0,0]) @=? (B85.decode $ pack [122])
-    -- all space
-    (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
-    -- double special
-    (Right $ pack [32,32,32,32,0,0,0,0]) @=? (B85.decode $ pack [121,122])
+    Right empty @=? B16.decode empty
+    (Right $ pack [102]) @=? (B16.decode $ pack [54,54])
+    (Right $ pack [102,111]) @=? (B16.decode $ pack [54,54,54,70])
+    (Right $ pack [102,111,111]) @=? (B16.decode $ pack [54,54,54,70,54,70])
+    (Right $ pack [102,111,111,98]) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50])
+    (Right $ pack [102,111,111,98,97]) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50,54,49])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50,54,49,55,50])
+
+-- {{{1 base32
+case_b32encode = do
+    -- foobar
+    empty @=? B32.encode empty
+    pack [77,89,61,61,61,61,61,61] @=? (B32.encode $ pack [102])
+    pack [77,90,88,81,61,61,61,61] @=? (B32.encode $ pack [102,111])
+    pack [77,90,88,87,54,61,61,61] @=? (B32.encode $ pack [102,111,111])
+    pack [77,90,88,87,54,89,81,61] @=? (B32.encode $ pack [102,111,111,98])
+    pack [77,90,88,87,54,89,84,66] @=? (B32.encode $ pack [102,111,111,98,97])
+    pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61] @=? (B32.encode $ pack [102,111,111,98,97,114])
+
+case_b32decode = do
+    -- foobar
+    Right empty @=? B32.decode empty
+    (Right $ pack [102]) @=? (B32.decode $ pack [77,89,61,61,61,61,61,61])
+    (Right $ pack [102,111]) @=? (B32.decode $ pack [77,90,88,81,61,61,61,61])
+    (Right $ pack [102,111,111]) @=? (B32.decode $ pack [77,90,88,87,54,61,61,61])
+    (Right $ pack [102,111,111,98]) @=? (B32.decode $ pack [77,90,88,87,54,89,81,61])
+    (Right $ pack [102,111,111,98,97]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61])
+
+-- {{{1 base32hex
+case_b32hencode = do
+    -- foobar
+    empty @=? B32H.encode empty
+    pack [67,79,61,61,61,61,61,61] @=? (B32H.encode $ pack [102])
+    pack [67,80,78,71,61,61,61,61] @=? (B32H.encode $ pack [102,111])
+    pack [67,80,78,77,85,61,61,61] @=? (B32H.encode $ pack [102,111,111])
+    pack [67,80,78,77,85,79,71,61] @=? (B32H.encode $ pack [102,111,111,98])
+    pack [67,80,78,77,85,79,74,49] @=? (B32H.encode $ pack [102,111,111,98,97])
+    pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61] @=? (B32H.encode $ pack [102,111,111,98,97,114])
+
+case_b32hdecode = do
+    -- foobar
+    Right empty @=? B32H.decode empty
+    (Right $ pack [102]) @=? (B32H.decode $ pack [67,79,61,61,61,61,61,61])
+    (Right $ pack [102,111]) @=? (B32H.decode $ pack [67,80,78,71,61,61,61,61])
+    (Right $ pack [102,111,111]) @=? (B32H.decode $ pack [67,80,78,77,85,61,61,61])
+    (Right $ pack [102,111,111,98]) @=? (B32H.decode $ pack [67,80,78,77,85,79,71,61])
+    (Right $ pack [102,111,111,98,97]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61])
 
 -- {{{1 base64
 case_b64encode = do
@@ -102,47 +133,38 @@ case_b64urldecode = do
     -- _--_
     (Right $ pack [255,239,191]) @=? (B64U.decode $ pack [95,45,45,95])
 
--- {{{1 base32
-case_b32encode = do
+-- {{{1 base85
+case_b85encode = do
     -- foobar
-    empty @=? B32.encode empty
-    pack [77,89,61,61,61,61,61,61] @=? (B32.encode $ pack [102])
-    pack [77,90,88,81,61,61,61,61] @=? (B32.encode $ pack [102,111])
-    pack [77,90,88,87,54,61,61,61] @=? (B32.encode $ pack [102,111,111])
-    pack [77,90,88,87,54,89,81,61] @=? (B32.encode $ pack [102,111,111,98])
-    pack [77,90,88,87,54,89,84,66] @=? (B32.encode $ pack [102,111,111,98,97])
-    pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61] @=? (B32.encode $ pack [102,111,111,98,97,114])
+    empty @=? B85.encode empty
+    pack [65,99] @=? (B85.encode $ pack [102])
+    pack [65,111,64] @=? (B85.encode $ pack [102,111])
+    pack [65,111,68,83] @=? (B85.encode $ pack [102,111,111])
+    pack [65,111,68,84,115] @=? (B85.encode $ pack [102,111,111,98])
+    pack [65,111,68,84,115,64,47] @=? (B85.encode $ pack [102,111,111,98,97])
+    pack [65,111,68,84,115,64,60,41] @=? (B85.encode $ pack [102,111,111,98,97,114])
+    -- all zero
+    pack [122] @=? (B85.encode $ pack [0,0,0,0])
+    -- all space
+    pack [121] @=? (B85.encode $ pack [32,32,32,32])
+    -- double special
+    pack [121,122] @=? (B85.encode $ pack [32,32,32,32,0,0,0,0])
 
-case_b32decode = do
+case_b85decode = do
     -- foobar
-    Right empty @=? B32.decode empty
-    (Right $ pack [102]) @=? (B32.decode $ pack [77,89,61,61,61,61,61,61])
-    (Right $ pack [102,111]) @=? (B32.decode $ pack [77,90,88,81,61,61,61,61])
-    (Right $ pack [102,111,111]) @=? (B32.decode $ pack [77,90,88,87,54,61,61,61])
-    (Right $ pack [102,111,111,98]) @=? (B32.decode $ pack [77,90,88,87,54,89,81,61])
-    (Right $ pack [102,111,111,98,97]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66])
-    (Right $ pack [102,111,111,98,97,114]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61])
-
--- {{{1 base32hex
-case_b32hencode = do
-    -- foobar
-    empty @=? B32H.encode empty
-    pack [67,79,61,61,61,61,61,61] @=? (B32H.encode $ pack [102])
-    pack [67,80,78,71,61,61,61,61] @=? (B32H.encode $ pack [102,111])
-    pack [67,80,78,77,85,61,61,61] @=? (B32H.encode $ pack [102,111,111])
-    pack [67,80,78,77,85,79,71,61] @=? (B32H.encode $ pack [102,111,111,98])
-    pack [67,80,78,77,85,79,74,49] @=? (B32H.encode $ pack [102,111,111,98,97])
-    pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61] @=? (B32H.encode $ pack [102,111,111,98,97,114])
-
-case_b32hdecode = do
-    -- foobar
-    Right empty @=? B32H.decode empty
-    (Right $ pack [102]) @=? (B32H.decode $ pack [67,79,61,61,61,61,61,61])
-    (Right $ pack [102,111]) @=? (B32H.decode $ pack [67,80,78,71,61,61,61,61])
-    (Right $ pack [102,111,111]) @=? (B32H.decode $ pack [67,80,78,77,85,61,61,61])
-    (Right $ pack [102,111,111,98]) @=? (B32H.decode $ pack [67,80,78,77,85,79,71,61])
-    (Right $ pack [102,111,111,98,97]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49])
-    (Right $ pack [102,111,111,98,97,114]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61])
+    Right empty @=? B85.decode empty
+    (Right $ pack [102]) @=? (B85.decode $ pack [65,99])
+    (Right $ pack [102,111]) @=? (B85.decode $ pack [65,111,64])
+    (Right $ pack [102,111,111]) @=? (B85.decode $ pack [65,111,68,83])
+    (Right $ pack [102,111,111,98]) @=? (B85.decode $ pack [65,111,68,84,115])
+    (Right $ pack [102,111,111,98,97]) @=? (B85.decode $ pack [65,111,68,84,115,64,47])
+    (Right $ pack [102,111,111,98,97,114]) @=? (B85.decode $ pack [65,111,68,84,115,64,60,41])
+    -- all zero
+    (Right $ pack [0,0,0,0]) @=? (B85.decode $ pack [122])
+    -- all space
+    (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
+    -- double special
+    (Right $ pack [32,32,32,32,0,0,0,0]) @=? (B85.decode $ pack [121,122])
 
 -- {{{1 uu
 case_uuencode = do

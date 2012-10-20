@@ -13,11 +13,12 @@ synopsis: Data encoding library
 description: Reasonably fast data encoding library currently providing
     multiple data encodings.
 extra-source-files:
-    csrc/b85.h
+    csrc/b16.h
     csrc/b32.h
     csrc/b32hex.h
     csrc/b64.h
     csrc/b64url.h
+    csrc/b85.h
     csrc/uu.h
     csrc/xx.h
     csrc/yenc.h
@@ -25,6 +26,7 @@ extra-source-files:
 library
     hs-source-dirs: src
     c-sources:
+        csrc/b16.c
         csrc/b32.c
         csrc/b32hex.c
         csrc/b64.c
@@ -38,6 +40,7 @@ library
         base ==4.6.*,
         bytestring ==0.10.*
     exposed-modules:
+            Codec.Binary.Base16
             Codec.Binary.Base32
             Codec.Binary.Base32Hex
             Codec.Binary.Base64
