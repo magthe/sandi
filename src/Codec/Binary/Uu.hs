@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module: Codec.Binary.Uu
+-- Copyright: (c) 2012 Magnus Therning
+-- License: BSD3
 module Codec.Binary.Uu
     ( uu_encode_part
     , uu_encode_final

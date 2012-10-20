@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module: Codec.Binary.Base32
+-- Copyright: (c) 2012 Magnus Therning
+-- License: BSD3
 module Codec.Binary.Base32
     ( b32_encode_part
     , b32_encode_final

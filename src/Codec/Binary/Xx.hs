@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module: Codec.Binary.Xx
+-- Copyright: (c) 2012 Magnus Therning
+-- License: BSD3
 module Codec.Binary.Xx
     ( xx_encode_part
     , xx_encode_final

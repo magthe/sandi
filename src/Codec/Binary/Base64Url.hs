@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module: Codec.Binary.Base64Url
+-- Copyright: (c) 2012 Magnus Therning
+-- License: BSD3
 module Codec.Binary.Base64Url
     ( b64u_encode_part
     , b64u_encode_final

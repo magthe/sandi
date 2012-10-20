@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module    : Codec.Binary.Base32Hex
+-- Copyright : (c) 2012 Magnus Therning
+-- License   : BSD3
 module Codec.Binary.Base32Hex
    ( b32h_encode_part
    , b32h_encode_final

@@ -1,3 +1,6 @@
+// Copyright: (c) Magnus Therning, 2012
+// License: BSD3, found in the LICENSE file
+
 #ifndef _B32_H_
 #define _B32_H_
 

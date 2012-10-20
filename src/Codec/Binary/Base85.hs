@@ -1,4 +1,9 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+
+-- |
+-- Module: Codec.Binary.Base85
+-- Copyright: (c) 2012 Magnus Therning
+-- License: BSD3
 module Codec.Binary.Base85
    ( b85_encode_part
    , b85_encode_final
