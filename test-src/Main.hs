@@ -16,6 +16,7 @@ import qualified Codec.Binary.Base32Hex as B32H
 import qualified Codec.Binary.Base64 as B64
 import qualified Codec.Binary.Base64Url as B64U
 import qualified Codec.Binary.Base85 as B85
+import qualified Codec.Binary.QuotedPrintable as QP
 import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Yenc as Y
@@ -177,6 +178,15 @@ case_b85_dec_specials = do
     (Right $ pack [32,32,32,32]) @=? (B85.decode $ pack [121])
     -- double special
     (Right $ pack [32,32,32,32,0,0,0,0]) @=? (B85.decode $ pack [121,122])
+
+-- {{{1 quoted printable
+case_qp_enc_foobar = do
+    empty @=? QP.encode empty
+    pack [102,111,111,98,97,114] @=? (QP.encode $ pack [102,111,111,98,97,114])
+
+case_qp_dec_foobar = do
+    Right empty @=? QP.decode empty
+    (Right $ pack [102,111,111,98,97,114]) @=? (QP.decode $ pack [102,111,111,98,97,114])
 
 -- {{{1 uu
 case_uu_enc_foobar = do
