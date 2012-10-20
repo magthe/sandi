@@ -42,6 +42,10 @@ case_b16_dec_foobar = do
     (Right $ pack [102,111,111,98,97]) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50,54,49])
     (Right $ pack [102,111,111,98,97,114]) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50,54,49,55,50])
 
+case_b16_dec_failure = do
+    -- odd number of input bytes
+    (Left (pack [102,111,111,98,97], pack [55])) @=? (B16.decode $ pack [54,54,54,70,54,70,54,50,54,49,55])
+
 -- {{{1 base32
 case_b32_enc_foobar = do
     -- foobar
