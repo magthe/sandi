@@ -156,40 +156,39 @@ case_b64u_dec_specials = do
 
 -- {{{1 base85
 case_b85_enc_foobar = do
-    -- foobar
     BS.empty @=? B85.encode BS.empty
-    BS.pack [65,99] @=? (B85.encode $ BS.pack [102])
-    BS.pack [65,111,64] @=? (B85.encode $ BS.pack [102,111])
-    BS.pack [65,111,68,83] @=? (B85.encode $ BS.pack [102,111,111])
-    BS.pack [65,111,68,84,115] @=? (B85.encode $ BS.pack [102,111,111,98])
-    BS.pack [65,111,68,84,115,64,47] @=? (B85.encode $ BS.pack [102,111,111,98,97])
-    BS.pack [65,111,68,84,115,64,60,41] @=? (B85.encode $ BS.pack [102,111,111,98,97,114])
+    BSC.pack "Ac"       @=? B85.encode (BSC.pack "f")
+    BSC.pack "Ao@"      @=? B85.encode (BSC.pack "fo")
+    BSC.pack "AoDS"     @=? B85.encode (BSC.pack "foo")
+    BSC.pack "AoDTs"    @=? B85.encode (BSC.pack "foob")
+    BSC.pack "AoDTs@/"  @=? B85.encode (BSC.pack "fooba")
+    BSC.pack "AoDTs@<)" @=? B85.encode (BSC.pack "foobar")
 
 case_b85_enc_specials = do
     -- all zero
-    BS.pack [122] @=? (B85.encode $ BS.pack [0,0,0,0])
+    BSC.pack "z" @=? B85.encode (BS.pack [0,0,0,0])
     -- all space
-    BS.pack [121] @=? (B85.encode $ BS.pack [32,32,32,32])
+    BSC.pack "y" @=? B85.encode (BS.pack [32,32,32,32])
     -- double special
-    BS.pack [121,122] @=? (B85.encode $ BS.pack [32,32,32,32,0,0,0,0])
+    BSC.pack "yz" @=? B85.encode (BS.pack [32,32,32,32,0,0,0,0])
 
 case_b85_dec_foobar = do
     -- foobar
-    Right BS.empty @=? B85.decode BS.empty
-    (Right $ BS.pack [102]) @=? (B85.decode $ BS.pack [65,99])
-    (Right $ BS.pack [102,111]) @=? (B85.decode $ BS.pack [65,111,64])
-    (Right $ BS.pack [102,111,111]) @=? (B85.decode $ BS.pack [65,111,68,83])
-    (Right $ BS.pack [102,111,111,98]) @=? (B85.decode $ BS.pack [65,111,68,84,115])
-    (Right $ BS.pack [102,111,111,98,97]) @=? (B85.decode $ BS.pack [65,111,68,84,115,64,47])
-    (Right $ BS.pack [102,111,111,98,97,114]) @=? (B85.decode $ BS.pack [65,111,68,84,115,64,60,41])
+    Right BS.empty            @=? B85.decode BS.empty
+    Right (BSC.pack "f")      @=? B85.decode (BSC.pack "Ac")
+    Right (BSC.pack "fo")     @=? B85.decode (BSC.pack "Ao@")
+    Right (BSC.pack "foo")    @=? B85.decode (BSC.pack "AoDS")
+    Right (BSC.pack "foob")   @=? B85.decode (BSC.pack "AoDTs")
+    Right (BSC.pack "fooba")  @=? B85.decode (BSC.pack "AoDTs@/")
+    Right (BSC.pack "foobar") @=? B85.decode (BSC.pack "AoDTs@<)")
 
 case_b85_dec_specials = do
     -- all zero
-    (Right $ BS.pack [0,0,0,0]) @=? (B85.decode $ BS.pack [122])
+    Right (BS.pack [0,0,0,0]) @=? B85.decode (BSC.pack "z")
     -- all space
-    (Right $ BS.pack [32,32,32,32]) @=? (B85.decode $ BS.pack [121])
+    Right (BS.pack [32,32,32,32]) @=? B85.decode (BSC.pack "y")
     -- double special
-    (Right $ BS.pack [32,32,32,32,0,0,0,0]) @=? (B85.decode $ BS.pack [121,122])
+    Right (BS.pack [32,32,32,32,0,0,0,0]) @=? B85.decode (BSC.pack "yz")
 
 -- {{{1 quoted printable
 case_qp_enc_foobar = do
