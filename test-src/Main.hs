@@ -96,6 +96,14 @@ case_b32h_dec_foobar = do
     (Right $ pack [102,111,111,98,97]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49])
     (Right $ pack [102,111,111,98,97,114]) @=? (B32H.decode $ pack [67,80,78,77,85,79,74,49,69,56,61,61,61,61,61,61])
 
+case_b32h_dec_failures = do
+    -- "C=NMUOJ1" (illegal char)
+    Left (empty, pack [67,61,78,77,85,79,74,49]) @=? (B32H.b32h_decode_part $ pack [67,61,78,77,85,79,74,49])
+    -- "CPNMUOJ1" (full block)
+    Nothing @=? (B32H.b32h_decode_final $ pack [67,80,78,77,85,79,74,49])
+    -- "CPNMUO=" (too short)
+    Nothing @=? (B32H.b32h_decode_final $ pack [67,80,78,77,85,79,61])
+
 -- {{{1 base64
 case_b64_enc_foobar = do
     -- foobar

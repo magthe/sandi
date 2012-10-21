@@ -11,7 +11,7 @@ void b32h_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
+    size_t od = *dstlen, i;
 
     assert(src || 0 == srclen);
     assert(dst);
@@ -19,7 +19,7 @@ void b32h_enc_part(uint8_t const *src, size_t srclen,
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 5 <= srclen; i += 5, *dstlen += 8) {
+    for(i = 0, *dstlen = 0; i + 5 <= srclen && *dstlen + 8 <= od; i += 5, *dstlen += 8) {
         int32_t o0, o1, o2, o3, o4, o5, o6, o7;
         o0 = src[i] >> 3;
         o1 = ((src[i] << 2) | (src[i+1] >> 6)) & 0x1f;
@@ -151,7 +151,7 @@ int b32h_dec_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
+    size_t od = *dstlen, i;
     int res = 0;
 
     assert(src || 0 == srclen);
@@ -160,8 +160,8 @@ int b32h_dec_part(uint8_t const *src, size_t srclen,
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 8 <= srclen; i += 8, *dstlen += 5) {
-        uint8_t o0, o1, o2, o3, o4, o5, o6, o7, all;
+    for(i = 0, *dstlen = 0; i + 8 <= srclen && *dstlen + 5 <= od; i += 8, *dstlen += 5) {
+        uint8_t o0, o1, o2, o3, o4, o5, o6, o7;
 
         o0 = decmap[src[i]];
         o1 = decmap[src[i+1]];
@@ -197,7 +197,7 @@ int b32h_dec_part(uint8_t const *src, size_t srclen,
 int b32h_dec_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
-    uint8_t o0, o1, o2, o3, o4, o5, o6, o7, all;
+    uint8_t o0, o1, o2, o3, o4, o5, o6, o7;
 
     assert(src || 0 == srclen);
     assert(dst);

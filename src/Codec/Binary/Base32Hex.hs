@@ -4,6 +4,11 @@
 -- Module    : Codec.Binary.Base32Hex
 -- Copyright : (c) 2012 Magnus Therning
 -- License   : BSD3
+--
+-- Implemented as specified in RFC 4648 (<http://tools.ietf.org/html/rfc4648>).
+--
+-- This encoding is closely related to base 32 and so is its implementation, so
+-- please refer to "Codec.Binary.Base32" for further details.
 module Codec.Binary.Base32Hex
    ( b32h_encode_part
    , b32h_encode_final
@@ -36,6 +41,14 @@ foreign import ccall "static b32.h b32h_dec_part"
 foreign import ccall "static b32.h b32h_dec_final"
     c_b32h_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
+-- | Encoding function.
+--
+-- See 'Codec.Binary.Base32.b32_encode_part'.
+--
+-- >>> b32h_encode_part $ Data.ByteString.Char8.pack "fooba"
+-- ("CPNMUOJ1","")
+-- >>> b32h_encode_part $ Data.ByteString.Char8.pack "foobar"
+-- ("CPNMUOJ1","r")
 b32h_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
 b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 5 * 8
@@ -43,8 +56,8 @@ b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                c_b32h_enc_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                c_b32h_enc_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
@@ -52,20 +65,37 @@ b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return (outBs, remBs)
 
--- todo: there is unnecessary memory used when the bytestring passed in is of length 0
+-- | Encoding function for the final block.
+--
+-- See 'Codec.Binary.Base32.b32_encode_final'.
+--
+-- >>> b32h_encode_final $ Data.ByteString.Char8.pack "r"
+-- Just "E8======"
+-- >>> b32h_encode_final $ Data.ByteString.Char8.pack "fooba"
+-- Nothing
 b32h_encode_final :: BS.ByteString -> Maybe BS.ByteString
 b32h_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    outBuf <- mallocBytes 4
+    outBuf <- mallocBytes 5
     alloca $ \ pOutLen -> do
         r <- c_b32h_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
--- todo: too much memory is used when there's an error
+-- | Decoding function.
+--
+-- See 'Codec.Binary.Base32.b32_decode_part'.
+--
+-- >>> b32h_decode_part $ Data.ByteString.Char8.pack "CPNMUOJ1"
+-- Right ("fooba","")
+-- >>> b32h_decode_part $ Data.ByteString.Char8.pack "CPNMUOJ1E8======"
+-- Right ("fooba","E8======")
+-- >>> b32h_decode_part $ Data.ByteString.Char8.pack "C=NMUOJ1"
+-- Left ("","C=NMUOJ1")
 b32h_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 b32h_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 8 * 5
@@ -73,36 +103,68 @@ b32h_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                r <- c_b32h_dec_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                r <- c_b32h_dec_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if r == 0
                     then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
--- todo: too much memory is used when 0 or 1 byte is encoded
+-- | Decoding function for the final block.
+--
+-- See 'Codec.Binary.Base32.b32_decode_final'.
+--
+-- >>> b32h_decode_final $ Data.ByteString.Char8.pack "CPNMUOG="
+-- Just "foob"
+-- >>> b32h_decode_final $ Data.ByteString.Char8.pack ""
+-- Just ""
+-- >>> b32h_decode_final $ Data.ByteString.Char8.pack "CPNMUO="
+-- Nothing
+-- >>> b32h_decode_final $ encode $ Data.ByteString.Char8.pack "fooba"
+-- Nothing
 b32h_decode_final :: BS.ByteString -> Maybe BS.ByteString
 b32h_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    outBuf <- mallocBytes 2
+    outBuf <- mallocBytes 5
     alloca $ \ pOutLen -> do
         r <- c_b32h_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
+-- | Convenience function that combines 'b32h_encode_part' and
+-- 'b32h_encode_final' to encode a complete string.
+--
+-- >>> encode $ Data.ByteString.Char8.pack "fooba"
+-- "CPNMUOJ1"
+-- >>> encode $ Data.ByteString.Char8.pack "foobar"
+-- "CPNMUOJ1E8======"
 encode :: BS.ByteString -> BS.ByteString
 encode bs = let
         (first, rest) = b32h_encode_part bs
         Just final = b32h_encode_final rest
     in first `BS.append` final
 
+-- | Convenience function that combines 'b32h_decode_part' and
+-- 'b32h_decode_final' to decode a complete string.
+--
+-- >>> decode $ Data.ByteString.Char8.pack "CPNMUOJ1"
+-- Right "fooba"
+-- >>> decode $ Data.ByteString.Char8.pack "CPNMUOJ1E8======"
+-- Right "foobar"
+--
+-- Failures when decoding returns the decoded part and the remainder:
+--
+-- >>> decode $ Data.ByteString.Char8.pack "CPNMUOJ1=8======"
+-- Left ("fooba","=8======")
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
 decode bs = either
     Left
