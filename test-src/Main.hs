@@ -202,24 +202,22 @@ case_qp_dec_foobar = do
 
 -- {{{1 uu
 case_uu_enc_foobar = do
-    -- foobar
-    BS.empty @=? Uu.encode BS.empty
-    BS.pack [57,64] @=? (Uu.encode $ BS.pack [102])
-    BS.pack [57,70,92] @=? (Uu.encode $ BS.pack [102,111])
-    BS.pack [57,70,93,79] @=? (Uu.encode $ BS.pack [102,111,111])
-    BS.pack [57,70,93,79,56,64] @=? (Uu.encode $ BS.pack [102,111,111,98])
-    BS.pack [57,70,93,79,56,70,36] @=? (Uu.encode $ BS.pack [102,111,111,98,97])
-    BS.pack [57,70,93,79,56,70,37,82] @=? (Uu.encode $ BS.pack [102,111,111,98,97,114])
+    BS.empty            @=? Uu.encode BS.empty
+    BSC.pack "9@"       @=? Uu.encode (BSC.pack "f")
+    BSC.pack "9F\\"     @=? Uu.encode (BSC.pack "fo")
+    BSC.pack "9F]O"     @=? Uu.encode (BSC.pack "foo")
+    BSC.pack "9F]O8@"   @=? Uu.encode (BSC.pack "foob")
+    BSC.pack "9F]O8F$"  @=? Uu.encode (BSC.pack "fooba")
+    BSC.pack "9F]O8F%R" @=? Uu.encode (BSC.pack "foobar")
 
 case_uu_dec_foobar = do
-    -- foobar
-    Right BS.empty @=? Uu.decode BS.empty
-    (Right $ BS.pack [102]) @=? (Uu.decode $ BS.pack [57,64])
-    (Right $ BS.pack [102,111]) @=? (Uu.decode $ BS.pack [57,70,92])
-    (Right $ BS.pack [102,111,111]) @=? (Uu.decode $ BS.pack [57,70,93,79])
-    (Right $ BS.pack [102,111,111,98]) @=? (Uu.decode $ BS.pack [57,70,93,79,56,64])
-    (Right $ BS.pack [102,111,111,98,97]) @=? (Uu.decode $ BS.pack [57,70,93,79,56,70,36])
-    (Right $ BS.pack [102,111,111,98,97,114]) @=? (Uu.decode $ BS.pack [57,70,93,79,56,70,37,82])
+    Right BS.empty            @=? Uu.decode BS.empty
+    Right (BSC.pack "f")      @=? Uu.decode (BSC.pack "9@")
+    Right (BSC.pack "fo")     @=? Uu.decode (BSC.pack "9F\\")
+    Right (BSC.pack "foo")    @=? Uu.decode (BSC.pack "9F]O")
+    Right (BSC.pack "foob")   @=? Uu.decode (BSC.pack "9F]O8@")
+    Right (BSC.pack "fooba")  @=? Uu.decode (BSC.pack "9F]O8F$")
+    Right (BSC.pack "foobar") @=? Uu.decode (BSC.pack "9F]O8F%R")
 
 -- {{{1 xx
 case_xx_enc_foobar = do
