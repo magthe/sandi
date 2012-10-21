@@ -11,15 +11,15 @@ void xx_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 3 <= srclen; i += 3, *dstlen += 4) {
+    size_t od = *dstlen, i;
+
+    for(i = 0, *dstlen = 0; i + 3 <= srclen && *dstlen + 4 <= od; i += 3, *dstlen += 4) {
         int32_t o0, o1, o2, o3;
         o0 = src[i] >> 2;
         o1 = ((src[i] << 4) | (src[i+1] >> 4)) & 0x3f;
@@ -96,17 +96,17 @@ int xx_dec_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
-    int res = 0;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 4 <= srclen; i += 4, *dstlen += 3) {
-        uint8_t o0, o1, o2, o3, all;
+    size_t od = *dstlen, i;
+    int res = 0;
+
+    for(i = 0, *dstlen = 0; i + 4 <= srclen && *dstlen + 3 <= od; i += 4, *dstlen += 3) {
+        uint8_t o0, o1, o2, o3;
 
         o0 = decmap[src[i]];
         o1 = decmap[src[i+1]];
@@ -130,11 +130,11 @@ int xx_dec_part(uint8_t const *src, size_t srclen,
 int xx_dec_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
-    uint8_t o0, o1, o2, o3, all;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
+
+    uint8_t o0, o1, o2, o3;
 
     switch(srclen) {
     case 0:
@@ -144,6 +144,7 @@ int xx_dec_final(uint8_t const *src, size_t srclen,
     case 2:
         o0 = decmap[src[0]];
         o1 = decmap[src[1]];
+        if(0xc0 & (o0 | o1)) goto error;
         dst[0] = (o0 << 2) | (o1 >> 4);
         *dstlen = 1;
         return(0);
@@ -152,13 +153,15 @@ int xx_dec_final(uint8_t const *src, size_t srclen,
         o0 = decmap[src[0]];
         o1 = decmap[src[1]];
         o2 = decmap[src[2]];
+        if(0xc0 & (o0 | o1 | o2)) goto error;
         dst[0] = (o0 << 2) | (o1 >> 4);
         dst[1] = (o1 << 4) | (o2 >> 2);
         *dstlen = 2;
         return(0);
         break;
-    default:
-        return(1);
-        break;
     }
+
+error:
+    *dstlen = 0;
+    return(1);
 }

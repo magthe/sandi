@@ -222,23 +222,23 @@ case_uu_dec_foobar = do
 -- {{{1 xx
 case_xx_enc_foobar = do
     -- foobar
-    BS.empty @=? Xx.encode BS.empty
-    BS.pack [78,85] @=? (Xx.encode $ BS.pack [102])
-    BS.pack [78,97,119] @=? (Xx.encode $ BS.pack [102,111])
-    BS.pack [78,97,120,106] @=? (Xx.encode $ BS.pack [102,111,111])
-    BS.pack [78,97,120,106,77,85] @=? (Xx.encode $ BS.pack [102,111,111,98])
-    BS.pack [78,97,120,106,77,97,50] @=? (Xx.encode $ BS.pack [102,111,111,98,97])
-    BS.pack [78,97,120,106,77,97,51,109] @=? (Xx.encode $ BS.pack [102,111,111,98,97,114])
+    BS.empty            @=? Xx.encode BS.empty
+    BSC.pack "NU"       @=? Xx.encode (BSC.pack "f")
+    BSC.pack "Naw"      @=? Xx.encode (BSC.pack "fo")
+    BSC.pack "Naxj"     @=? Xx.encode (BSC.pack "foo")
+    BSC.pack "NaxjMU"   @=? Xx.encode (BSC.pack "foob")
+    BSC.pack "NaxjMa2"  @=? Xx.encode (BSC.pack "fooba")
+    BSC.pack "NaxjMa3m" @=? Xx.encode (BSC.pack "foobar")
 
 case_xx_dec_foobar = do
     -- foobar
-    Right BS.empty @=? Xx.decode BS.empty
-    (Right $ BS.pack [102]) @=? (Xx.decode $ BS.pack [78,85])
-    (Right $ BS.pack [102,111]) @=? (Xx.decode $ BS.pack [78,97,119])
-    (Right $ BS.pack [102,111,111]) @=? (Xx.decode $ BS.pack [78,97,120,106])
-    (Right $ BS.pack [102,111,111,98]) @=? (Xx.decode $ BS.pack [78,97,120,106,77,85])
-    (Right $ BS.pack [102,111,111,98,97]) @=? (Xx.decode $ BS.pack [78,97,120,106,77,97,50])
-    (Right $ BS.pack [102,111,111,98,97,114]) @=? (Xx.decode $ BS.pack [78,97,120,106,77,97,51,109])
+    Right BS.empty            @=? Xx.decode BS.empty
+    Right (BSC.pack "f")      @=? Xx.decode (BSC.pack "NU")
+    Right (BSC.pack "fo")     @=? Xx.decode (BSC.pack "Naw")
+    Right (BSC.pack "foo")    @=? Xx.decode (BSC.pack "Naxj")
+    Right (BSC.pack "foob")   @=? Xx.decode (BSC.pack "NaxjMU")
+    Right (BSC.pack "fooba")  @=? Xx.decode (BSC.pack "NaxjMa2")
+    Right (BSC.pack "foobar") @=? Xx.decode (BSC.pack "NaxjMa3m")
 
 -- {{{1 yenc
 case_y_enc_foobar = do

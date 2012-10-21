@@ -4,6 +4,15 @@
 -- Module: Codec.Binary.Xx
 -- Copyright: (c) 2012 Magnus Therning
 -- License: BSD3
+--
+-- Xxencoding is obsolete but still included for completeness.  Further
+-- information on the encoding can be found at
+-- <http://en.wikipedia.org/wiki/Xxencode>.  It should be noted that this
+-- implementation performs no padding.
+--
+-- This encoding is very similar to uuencoding, therefore further information
+-- regarding the functions can be found in the documentation of
+-- "Codec.Binary.Uu".
 module Codec.Binary.Xx
     ( xx_encode_part
     , xx_encode_final
@@ -13,13 +22,13 @@ module Codec.Binary.Xx
     , decode
     ) where
 
+import Data.ByteString.Unsafe
 import Foreign
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
-import qualified Data.ByteString as BS
-import Data.ByteString.Unsafe
 import System.IO.Unsafe as U
+import qualified Data.ByteString as BS
 
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
@@ -36,6 +45,12 @@ foreign import ccall "static uu.h xx_dec_part"
 foreign import ccall "static uu.h xx_dec_final"
     c_xx_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
+-- | Encoding function.
+--
+-- >>> xx_encode_part $ Data.ByteString.Char8.pack "foo"
+-- ("Naxj","")
+-- >>> xx_encode_part $ Data.ByteString.Char8.pack "foob"
+-- ("Naxj","b")
 xx_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
 xx_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
@@ -43,8 +58,8 @@ xx_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                c_xx_enc_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                c_xx_enc_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
@@ -52,20 +67,34 @@ xx_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return (outBs, remBs)
 
--- todo: there is unnecessary memory used when the bytestring passed in is of length 0
+-- | Encoding function for the final block.
+--
+-- >>> xx_encode_final $ Data.ByteString.Char8.pack "r"
+-- Just "QU"
+-- >>> xx_encode_final $ Data.ByteString.Char8.pack "foo"
+-- Nothing
 xx_encode_final :: BS.ByteString -> Maybe BS.ByteString
 xx_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_xx_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
--- todo: too much memory is used when there's an error
+-- | Decoding function.
+--
+-- >>> xx_decode_part $ Data.ByteString.Char8.pack "Naxj"
+-- Right ("foo","")
+-- >>> xx_decode_part $ Data.ByteString.Char8.pack "NaxjMa3"
+-- Right ("foo","Ma3")
+--
+-- >>> xx_decode_part $ Data.ByteString.Char8.pack "Na j"
+-- Left ("","Na J")
 xx_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 xx_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
@@ -73,29 +102,41 @@ xx_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                r <- c_xx_dec_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                r <- c_xx_dec_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if r == 0
                     then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
--- todo: too much memory is used when 0 or 1 byte is encoded
+-- | Decoding function for the final block.
+--
+-- >>> xx_decode_final $ Data.ByteString.Char8.pack "Naw"
+-- Just "fo"
+-- >>> xx_decode_final $ Data.ByteString.Char8.pack ""
+-- Just ""
+-- >>> xx_decode_final $ Data.ByteString.Char8.pack "Na "
+-- Nothing
+--
+-- >>> xx_decode_final $ encode $ Data.ByteString.Char8.pack "foo"
+-- Nothing
 xx_decode_final :: BS.ByteString -> Maybe BS.ByteString
 xx_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    outBuf <- mallocBytes 2
+    outBuf <- mallocBytes 3
     alloca $ \ pOutLen -> do
         r <- c_xx_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
 encode :: BS.ByteString -> BS.ByteString
 encode bs = let
