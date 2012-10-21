@@ -194,11 +194,11 @@ case_b85_dec_specials = do
 -- {{{1 quoted printable
 case_qp_enc_foobar = do
     BS.empty @=? QP.encode BS.empty
-    BS.pack [102,111,111,98,97,114] @=? (QP.encode $ BS.pack [102,111,111,98,97,114])
+    BSC.pack "foobar" @=? QP.encode (BSC.pack "foobar")
 
 case_qp_dec_foobar = do
     Right BS.empty @=? QP.decode BS.empty
-    (Right $ BS.pack [102,111,111,98,97,114]) @=? (QP.decode $ BS.pack [102,111,111,98,97,114])
+    Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foobar")
 
 -- {{{1 uu
 case_uu_enc_foobar = do

@@ -11,13 +11,13 @@ void qp_enc(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t od = *dstlen, i;
-
     assert(src || srclen == 0);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
+
+    size_t od = *dstlen, i;
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
         if((33 <= src[i] && src[i] <= 60) ||
@@ -61,14 +61,14 @@ int qp_dec(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t od = *dstlen, i;
-    int res = 0;
-
     assert(src || srclen == 0);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
+
+    size_t od = *dstlen, i;
+    int res = 0;
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
         if((33 <= src[i] && src[i] <= 60) ||
