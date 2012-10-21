@@ -67,6 +67,14 @@ case_b32_dec_foobar = do
     (Right $ pack [102,111,111,98,97]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66])
     (Right $ pack [102,111,111,98,97,114]) @=? (B32.decode $ pack [77,90,88,87,54,89,84,66,79,73,61,61,61,61,61,61])
 
+case_b32_dec_failures = do
+    -- "M=XW6YTB" (illegal char)
+    Left (empty, pack [77,61,88,87,54,89,84,66]) @=? (B32.b32_decode_part $ pack [77,61,88,87,54,89,84,66])
+    -- "MZXW6YTB" (full block)
+    Nothing @=? (B32.b32_decode_final $ pack [77,90,88,87,54,89,84,66])
+    -- "MZXW6Y=" (too short)
+    Nothing @=? (B32.b32_decode_final $ pack [77,90,88,87,54,89,61])
+
 -- {{{1 base32hex
 case_b32h_enc_foobar = do
     -- foobar
