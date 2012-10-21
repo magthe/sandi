@@ -11,15 +11,15 @@ void b64u_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 3 <= srclen; i += 3, *dstlen += 4) {
+    size_t od = *dstlen, i;
+
+    for(i = 0, *dstlen = 0; i + 3 <= srclen && *dstlen + 4 <= od; i += 3, *dstlen += 4) {
         int32_t o0, o1, o2, o3;
         o0 = src[i] >> 2;
         o1 = ((src[i] << 4) | (src[i+1] >> 4)) & 0x3f;
@@ -99,17 +99,17 @@ int b64u_dec_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t i;
-    int res = 0;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
 
-    for(i = 0, *dstlen = 0; i + 4 <= srclen; i += 4, *dstlen += 3) {
-        uint8_t o0, o1, o2, o3, all;
+    size_t od = *dstlen, i;
+    int res = 0;
+
+    for(i = 0, *dstlen = 0; i + 4 <= srclen && *dstlen + 3 <= od; i += 4, *dstlen += 3) {
+        uint8_t o0, o1, o2, o3;
 
         o0 = decmap[src[i]];
         o1 = decmap[src[i+1]];
@@ -137,11 +137,11 @@ int b64u_dec_part(uint8_t const *src, size_t srclen,
 int b64u_dec_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
-    uint8_t o0, o1, o2, o3, all;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
+
+    uint8_t o0, o1, o2, o3;
 
     if(0 == srclen) {
         *dstlen = 0;

@@ -4,6 +4,15 @@
 -- Module: Codec.Binary.Base64Url
 -- Copyright: (c) 2012 Magnus Therning
 -- License: BSD3
+--
+-- Implemented as specified in RFC 4648 (<http://tools.ietf.org/html/rfc4648>).
+--
+-- The difference compared to vanilla Base64 encoding is just in two
+-- characters.  In Base64 the characters @/+@ are used, and in Base64Url they
+-- are replaced by @_-@ respectively.
+--
+-- Please refer to "Codec.Binary.Base64" for the details of all functions in
+-- this module.
 module Codec.Binary.Base64Url
     ( b64u_encode_part
     , b64u_encode_final
@@ -43,8 +52,8 @@ b64u_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                c_b64u_enc_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                c_b64u_enc_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
@@ -52,20 +61,19 @@ b64u_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return (outBs, remBs)
 
--- todo: there is unnecessary memory used when the bytestring passed in is of length 0
 b64u_encode_final :: BS.ByteString -> Maybe BS.ByteString
 b64u_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_b64u_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
--- todo: too much memory is used when there's an error
 b64url_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 b64url_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
@@ -73,29 +81,30 @@ b64url_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf,
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
-                r <- c_b64u_dec_part (castPtr inBuf) (castEnum inLen)
-                    outBuf pOutLen pRemBuf pRemLen
+                poke pOutLen (castEnum maxOutLen)
+                r <- c_b64u_dec_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if r == 0
                     then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
--- todo: too much memory is used when 0 or 1 byte is encoded
 b64url_decode_final :: BS.ByteString -> Maybe BS.ByteString
 b64url_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    outBuf <- mallocBytes 2
+    outBuf <- mallocBytes 3
     alloca $ \ pOutLen -> do
         r <- c_b64u_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
-        if r /= 0
-            then return Nothing
-            else do
+        if r == 0
+            then do
                 outLen <- peek pOutLen
-                outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
+                newOutBuf <- reallocBytes outBuf (castEnum outLen)
+                outBs <- unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return $ Just outBs
+            else free outBuf >> return Nothing
 
 encode :: BS.ByteString -> BS.ByteString
 encode bs = let
