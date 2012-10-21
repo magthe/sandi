@@ -242,38 +242,36 @@ case_xx_dec_foobar = do
 
 -- {{{1 yenc
 case_y_enc_foobar = do
-    -- foobar
-    BS.empty @=? Y.encode BS.empty
-    BS.pack [144] @=? (Y.encode $ BS.pack [102])
-    BS.pack [144,153] @=? (Y.encode $ BS.pack [102,111])
-    BS.pack [144,153,153] @=? (Y.encode $ BS.pack [102,111,111])
-    BS.pack [144,153,153,140] @=? (Y.encode $ BS.pack [102,111,111,98])
-    BS.pack [144,153,153,140,139] @=? (Y.encode $ BS.pack [102,111,111,98,97])
-    BS.pack [144,153,153,140,139,156] @=? (Y.encode $ BS.pack [102,111,111,98,97,114])
+    BS.empty                          @=? Y.encode BS.empty
+    BS.pack [144]                     @=? Y.encode (BSC.pack "f")
+    BS.pack [144,153]                 @=? Y.encode (BSC.pack "fo")
+    BS.pack [144,153,153]             @=? Y.encode (BSC.pack "foo")
+    BS.pack [144,153,153,140]         @=? Y.encode (BSC.pack "foob")
+    BS.pack [144,153,153,140,139]     @=? Y.encode (BSC.pack "fooba")
+    BS.pack [144,153,153,140,139,156] @=? Y.encode (BSC.pack "foobar")
 
 case_y_enc_specials = do
     -- expanded chars
-    BS.pack [61,64] @=? (Y.encode $ BS.pack [214])
-    BS.pack [61,74] @=? (Y.encode $ BS.pack [224])
-    BS.pack [61,77] @=? (Y.encode $ BS.pack [227])
-    BS.pack [61,125] @=? (Y.encode $ BS.pack [19])
+    BS.pack [61,64]  @=? Y.encode (BS.pack [214])
+    BS.pack [61,74]  @=? Y.encode (BS.pack [224])
+    BS.pack [61,77]  @=? Y.encode (BS.pack [227])
+    BS.pack [61,125] @=? Y.encode (BS.pack [19])
 
 case_y_dec_foobar = do
-    -- foobar
-    Right BS.empty @=? Y.decode BS.empty
-    (Right $ BS.pack [102]) @=? (Y.decode $ BS.pack [144])
-    (Right $ BS.pack [102,111]) @=? (Y.decode $ BS.pack [144,153])
-    (Right $ BS.pack [102,111,111]) @=? (Y.decode $ BS.pack [144,153,153])
-    (Right $ BS.pack [102,111,111,98]) @=? (Y.decode $ BS.pack [144,153,153,140])
-    (Right $ BS.pack [102,111,111,98,97]) @=? (Y.decode $ BS.pack [144,153,153,140,139])
-    (Right $ BS.pack [102,111,111,98,97,114]) @=? (Y.decode $ BS.pack [144,153,153,140,139,156])
+    Right BS.empty            @=? Y.decode BS.empty
+    Right (BSC.pack "f")      @=? Y.decode (BS.pack [144])
+    Right (BSC.pack "fo")     @=? Y.decode (BS.pack [144,153])
+    Right (BSC.pack "foo")    @=? Y.decode (BS.pack [144,153,153])
+    Right (BSC.pack "foob")   @=? Y.decode (BS.pack [144,153,153,140])
+    Right (BSC.pack "fooba")  @=? Y.decode (BS.pack [144,153,153,140,139])
+    Right (BSC.pack "foobar") @=? Y.decode (BS.pack [144,153,153,140,139,156])
 
 case_y_dec_specials = do
     -- expanded chars
-    (Right $ BS.pack [214]) @=? (Y.decode $ BS.pack [61,64])
-    (Right $ BS.pack [224]) @=? (Y.decode $ BS.pack [61,74])
-    (Right $ BS.pack [227]) @=? (Y.decode $ BS.pack [61,77])
-    (Right $ BS.pack [19]) @=? (Y.decode $ BS.pack [61,125])
+    Right (BS.pack [214]) @=? Y.decode (BS.pack [61,64])
+    Right (BS.pack [224]) @=? Y.decode (BS.pack [61,74])
+    Right (BS.pack [227]) @=? Y.decode (BS.pack [61,77])
+    Right (BS.pack [19])  @=? Y.decode (BS.pack [61,125])
 
 -- {{{1 tests & main
 tests = [$(testGroupGenerator)]

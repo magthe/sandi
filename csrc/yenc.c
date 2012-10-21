@@ -9,13 +9,13 @@ void y_enc(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t od = *dstlen, i;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
+
+    size_t od = *dstlen, i;
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
         switch(src[i]) {
@@ -42,13 +42,13 @@ int y_dec(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t od = *dstlen, i;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
+
+    size_t od = *dstlen, i;
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
         if(61 == src[i]) {
