@@ -1,28 +1,25 @@
-name: dataenc2
-version: 0.0
+name: sandi
+version: 0.1
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.8
 build-type: Simple
 author: Magnus Therning
 maintainer: magnus@therning.org
-homepage: http://to.be.added/
+homepage: http://hackage.haskell.org/package/sandi
 copyright: Magnus Therning, 2012
 category: Codec
 synopsis: Data encoding library
-description: Reasonably fast data encoding library currently providing
-    multiple data encodings.
-extra-source-files:
-    csrc/b16.h
-    csrc/b32.h
-    csrc/b32hex.h
-    csrc/b64.h
-    csrc/b64url.h
-    csrc/b85.h
-    csrc/qp.h
-    csrc/uu.h
-    csrc/xx.h
-    csrc/yenc.h
+description: Reasonably fast data encoding library.
+extra-source-files: csrc/*.h
+
+source-repository head
+    type: git
+    location: https://github.com/magthe/sandi
+
+flag tests
+    description: Build tests
+    default: False
 
 library
     hs-source-dirs: src
@@ -52,15 +49,23 @@ library
             Codec.Binary.Uu
             Codec.Binary.Xx
             Codec.Binary.Yenc
+    if !flag(tests)
+        cc-options: "-DNDEBUG"
+    else
+        cc-options: "-DDEBUG"
 
 executable tests
     main-is: Main.hs
     hs-source-dirs: test-src
-    build-depends:
-        dataenc2,
-        base ==4.6.*,
-        bytestring ==0.10.*,
-        HUnit ==1.2.*,
-        test-framework-th ==0.2.*,
-        test-framework ==0.6.*,
-        test-framework-hunit ==0.2.*
+    if flag(tests)
+        buildable: True
+        build-depends:
+            sandi,
+            base ==4.6.*,
+            bytestring ==0.10.*,
+            HUnit ==1.2.*,
+            test-framework-th ==0.2.*,
+            test-framework ==0.6.*,
+            test-framework-hunit ==0.2.*
+    else
+        buildable: False
