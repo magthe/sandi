@@ -26,8 +26,8 @@ executable odec
     other-modules:
         Data.ByteString.Iteratee,
         Data.ByteString.Iteratee.Internals
-    build-depends: base ==4.3.*, cmdargs ==0.6.*, bytestring ==0.9.*,
-        mtl ==2.0.*, dataenc ==0.14.*
+    build-depends: base ==4.6.*, cmdargs ==0.10.*, bytestring ==0.10.*,
+        mtl ==2.1.*, dataenc ==0.14.*
     ghc-options: -Wall
 
 executable oenc
