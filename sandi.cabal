@@ -65,7 +65,8 @@ executable tests
             bytestring ==0.10.*,
             HUnit ==1.2.*,
             test-framework-th ==0.2.*,
-            test-framework ==0.6.*,
-            test-framework-hunit ==0.2.*
+            test-framework ==0.8.*,
+            test-framework-hunit ==0.3.*,
+            test-framework-quickcheck2 ==0.3.*
     else
         buildable: False

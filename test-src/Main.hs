@@ -8,6 +8,7 @@ module Main where
 import Test.Framework
 import Test.Framework.TH
 import Test.Framework.Providers.HUnit
+import Test.Framework.Providers.QuickCheck2
 import Test.HUnit
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -23,6 +24,9 @@ import qualified Codec.Binary.Uu as Uu
 import qualified Codec.Binary.Xx as Xx
 import qualified Codec.Binary.Yenc as Y
 
+-- {{{1 utils
+fromRight (Right a) = a
+
 -- {{{1 base16
 case_b16_enc_foobar = do
     BSC.empty               @=? B16.encode BSC.empty
@@ -34,7 +38,7 @@ case_b16_enc_foobar = do
     BSC.pack "666F6F626172" @=? B16.encode (BSC.pack "foobar")
 
 case_b16_dec_foobar = do
-    Right BS.empty                            @=? B16.decode BS.empty
+    Right BS.empty            @=? B16.decode BS.empty
     Right (BSC.pack "f")      @=? B16.decode (BSC.pack "66")
     Right (BSC.pack "fo")     @=? B16.decode (BSC.pack "666F")
     Right (BSC.pack "foo")    @=? B16.decode (BSC.pack "666F6F")
@@ -45,6 +49,8 @@ case_b16_dec_foobar = do
 case_b16_dec_failure = do
     -- odd number of input bytes
     (Left (BSC.pack "fooba", BS.pack [55])) @=? (B16.decode $ BS.pack [54,54,54,70,54,70,54,50,54,49,55])
+
+prop_b16_encdec ws = (BS.pack ws) == (fromRight $ B16.decode $ B16.encode $ BS.pack ws)
 
 -- {{{1 base32
 case_b32_enc_foobar = do
@@ -73,6 +79,8 @@ case_b32_dec_failures = do
     -- too short
     Nothing @=? (B32.b32_decode_final $ BSC.pack "MZXW6Y=")
 
+prop_b36_encdec ws = (BS.pack ws) == (fromRight $ B32.decode $ B32.encode $ BS.pack ws)
+
 -- {{{1 base32hex
 case_b32h_enc_foobar = do
     BSC.empty                   @=? B32H.encode BS.empty
@@ -85,11 +93,11 @@ case_b32h_enc_foobar = do
 
 case_b32h_dec_foobar = do
     Right BS.empty            @=? B32H.decode BS.empty
-    Right (BSC.pack "f") @=? B32H.decode (BSC.pack "CO======")
-    Right (BSC.pack "fo") @=? B32H.decode (BSC.pack "CPNG====")
-    Right (BSC.pack "foo") @=? B32H.decode (BSC.pack "CPNMU===")
-    Right (BSC.pack "foob") @=? B32H.decode (BSC.pack "CPNMUOG=")
-    Right (BSC.pack "fooba") @=? B32H.decode (BSC.pack "CPNMUOJ1")
+    Right (BSC.pack "f")      @=? B32H.decode (BSC.pack "CO======")
+    Right (BSC.pack "fo")     @=? B32H.decode (BSC.pack "CPNG====")
+    Right (BSC.pack "foo")    @=? B32H.decode (BSC.pack "CPNMU===")
+    Right (BSC.pack "foob")   @=? B32H.decode (BSC.pack "CPNMUOG=")
+    Right (BSC.pack "fooba")  @=? B32H.decode (BSC.pack "CPNMUOJ1")
     Right (BSC.pack "foobar") @=? B32H.decode (BSC.pack "CPNMUOJ1E8======")
 
 case_b32h_dec_failures = do
@@ -99,6 +107,8 @@ case_b32h_dec_failures = do
     Nothing @=? (B32H.b32h_decode_final $ BSC.pack "CPNMUOJ1")
     -- too short
     Nothing @=? (B32H.b32h_decode_final $ BSC.pack "CPNMUO=")
+
+prop_b32H_encdec ws = (BS.pack ws) == (fromRight $ B32H.decode $ B32H.encode $ BS.pack ws)
 
 -- {{{1 base64
 case_b64_enc_foobar = do
@@ -127,6 +137,8 @@ case_b64_dec_specials = do
     -- /++/
     Right (BS.pack [255,239,191]) @=? B64.decode (BSC.pack "/++/")
 
+prop_b64_encdec ws = (BS.pack ws) == (fromRight $ B64.decode $ B64.encode $ BS.pack ws)
+
 -- {{{1 base64url
 case_b64u_enc_foobar = do
     BSC.empty           @=? B64U.encode BSC.empty
@@ -153,6 +165,8 @@ case_b64u_dec_foobar = do
 case_b64u_dec_specials = do
     -- _--_
     Right (BS.pack [255,239,191]) @=? B64U.decode (BSC.pack "_--_")
+
+prop_b64U_encdec ws = (BS.pack ws) == (fromRight $ B64U.decode $ B64U.encode $ BS.pack ws)
 
 -- {{{1 base85
 case_b85_enc_foobar = do
@@ -190,14 +204,18 @@ case_b85_dec_specials = do
     -- double special
     Right (BS.pack [32,32,32,32,0,0,0,0]) @=? B85.decode (BSC.pack "yz")
 
+prop_b85_encdec ws = (BS.pack ws) == (fromRight $ B85.decode $ B85.encode $ BS.pack ws)
+
 -- {{{1 quoted printable
 case_qp_enc_foobar = do
-    BS.empty @=? QP.encode BS.empty
+    BS.empty          @=? QP.encode BS.empty
     BSC.pack "foobar" @=? QP.encode (BSC.pack "foobar")
 
 case_qp_dec_foobar = do
-    Right BS.empty @=? QP.decode BS.empty
+    Right BS.empty            @=? QP.decode BS.empty
     Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foobar")
+
+prop_qp_encdec ws = (BS.pack ws) == (fromRight $ QP.decode $ QP.encode $ BS.pack ws)
 
 -- {{{1 uu
 case_uu_enc_foobar = do
@@ -217,6 +235,8 @@ case_uu_dec_foobar = do
     Right (BSC.pack "foob")   @=? Uu.decode (BSC.pack "9F]O8@")
     Right (BSC.pack "fooba")  @=? Uu.decode (BSC.pack "9F]O8F$")
     Right (BSC.pack "foobar") @=? Uu.decode (BSC.pack "9F]O8F%R")
+
+prop_uu_encdec ws = (BS.pack ws) == (fromRight $ Uu.decode $ Uu.encode $ BS.pack ws)
 
 -- {{{1 xx
 case_xx_enc_foobar = do
@@ -238,6 +258,8 @@ case_xx_dec_foobar = do
     Right (BSC.pack "foob")   @=? Xx.decode (BSC.pack "NaxjMU")
     Right (BSC.pack "fooba")  @=? Xx.decode (BSC.pack "NaxjMa2")
     Right (BSC.pack "foobar") @=? Xx.decode (BSC.pack "NaxjMa3m")
+
+prop_xx_encdec ws = (BS.pack ws) == (fromRight $ Xx.decode $ Xx.encode $ BS.pack ws)
 
 -- {{{1 yenc
 case_y_enc_foobar = do
@@ -271,6 +293,8 @@ case_y_dec_specials = do
     Right (BS.pack [224]) @=? Y.decode (BS.pack [61,74])
     Right (BS.pack [227]) @=? Y.decode (BS.pack [61,77])
     Right (BS.pack [19])  @=? Y.decode (BS.pack [61,125])
+
+prop_y_encdec ws = (BS.pack ws) == (fromRight $ Y.decode $ Y.encode $ BS.pack ws)
 
 -- {{{1 tests & main
 tests = [$(testGroupGenerator)]
