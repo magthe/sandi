@@ -55,7 +55,7 @@ y_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
-                outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free outBuf)
+                outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 return (outBs, remBs)
 
 -- | Decoding function.
@@ -82,7 +82,7 @@ y_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
-                outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free outBuf)
+                outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if remLen == 0
                     then return $ Right outBs
                     else return $ Left (outBs, remBs)
