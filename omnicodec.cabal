@@ -1,6 +1,6 @@
 name: omnicodec
-version: 0.5.0.2
-license: Apache-2.0
+version: 0.6
+license: OtherLicense
 license-file: COPYING
 author: Magnus Therning
 maintainer: magnus@therning.org
@@ -9,7 +9,7 @@ synopsis: data encoding and decoding command line utilities
 description: Two simple command line tools built on sandi.
 build-type: Simple
 category: Codec
-cabal-version: >= 1.2
+cabal-version: >= 1.6
 
 source-repository head
     type: git
@@ -18,7 +18,7 @@ source-repository head
 source-repository this
     type: git
     location: https://github.com/magthe/omnicodec
-    tag: REL_0.5.0.2
+    tag: REL_0.6
 
 executable odec
     main-is: odec.hs
