@@ -4,7 +4,7 @@ license: GPL
 license-file: COPYING
 author: Magnus Therning
 maintainer: magnus@therning.org
-copyright: Magnus Therning, 2007-2011
+copyright: Magnus Therning, 2007-2012
 synopsis: data encoding and decoding command line utilities
 description: Two simple command line tools built on dataenc.
 build-type: Simple
@@ -23,14 +23,13 @@ source-repository this
 executable odec
     main-is: odec.hs
     hs-source-dirs: src
-    other-modules:
-        Data.ByteString.Iteratee,
-        Data.ByteString.Iteratee.Internals
     build-depends: base ==4.6.*, cmdargs ==0.10.*, bytestring ==0.10.*,
-        mtl ==2.1.*, dataenc ==0.14.*
+        sandi ==0.1.*
     ghc-options: -Wall
 
 executable oenc
     main-is: oenc.hs
     hs-source-dirs: src
+    build-depends: base ==4.6.*, cmdargs ==0.10.*, bytestring ==0.10.*,
+        sandi ==0.1.*
     ghc-options: -Wall
