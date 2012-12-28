@@ -1,15 +1,15 @@
 name: omnicodec
 version: 0.5.0.2
-license: GPL
+license: Apache-2.0
 license-file: COPYING
 author: Magnus Therning
 maintainer: magnus@therning.org
-copyright: Magnus Therning, 2007-2012
+copyright: Magnus Therning, 2012
 synopsis: data encoding and decoding command line utilities
-description: Two simple command line tools built on dataenc.
+description: Two simple command line tools built on sandi.
 build-type: Simple
 category: Codec
-cabal-version: >= 1.6
+cabal-version: >= 1.2
 
 source-repository head
     type: git
