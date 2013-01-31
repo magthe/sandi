@@ -59,3 +59,13 @@ test-suite sandi-tests
         test-framework-hunit,
         test-framework-th,
         test-framework
+
+benchmark sandi-bench
+    type: exitcode-stdio-1.0
+    hs-source-dirs:   src, bench-src
+    main-is: Main.hs
+    build-depends:
+        sandi,
+        base,
+        bytestring,
+        criterion
