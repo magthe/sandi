@@ -1,5 +1,5 @@
 name: omnicodec
-version: 0.6.999
+version: 0.7
 license: OtherLicense
 license-file: COPYING
 author: Magnus Therning
@@ -29,7 +29,7 @@ executable odec
         cmdargs ==0.10.*,
         conduit ==1.0.*,
         bytestring ==0.10.*,
-        sandi ==0.1.*,
+        sandi ==0.2.*,
         transformers ==0.3.*
     ghc-options: -Wall
 
@@ -41,6 +41,6 @@ executable oenc
         cmdargs ==0.10.*,
         conduit ==1.0.*,
         bytestring ==0.10.*,
-        sandi ==0.1.*,
+        sandi ==0.2.*,
         transformers ==0.3.*
     ghc-options: -Wall
