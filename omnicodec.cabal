@@ -24,13 +24,23 @@ source-repository this
 executable odec
     main-is: odec.hs
     hs-source-dirs: src
-    build-depends: base ==4.6.*, cmdargs ==0.10.*, bytestring ==0.10.*,
-        sandi ==0.1.*
+    build-depends:
+        base ==4.6.*,
+        cmdargs ==0.10.*,
+        conduit ==1.0.*,
+        bytestring ==0.10.*,
+        sandi ==0.1.*,
+        transformers ==0.3.*
     ghc-options: -Wall
 
 executable oenc
     main-is: oenc.hs
     hs-source-dirs: src
-    build-depends: base ==4.6.*, cmdargs ==0.10.*, bytestring ==0.10.*,
-        sandi ==0.1.*
+    build-depends:
+        base ==4.6.*,
+        cmdargs ==0.10.*,
+        conduit ==1.0.*,
+        bytestring ==0.10.*,
+        sandi ==0.1.*,
+        transformers ==0.3.*
     ghc-options: -Wall

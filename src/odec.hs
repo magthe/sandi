@@ -22,25 +22,26 @@ module Main where
 import Paths_omnicodec (version)
 
 import Control.Exception
-import Control.Monad
+import Control.Monad.IO.Class
+-- import Control.Monad
 import Data.ByteString as BS
 import Data.Maybe
 import Data.Version(showVersion)
 import System.Console.CmdArgs
-import System.Exit
+-- import System.Exit
 import System.IO as SIO
+import Data.Conduit
+import Data.Conduit.Binary
 
-import Codec.Binary.Base64 as B64
-import qualified Codec.Binary.Base64Url as B64U
-import qualified Codec.Binary.Base32 as B32
-import qualified Codec.Binary.Base32Hex as B32H
-import qualified Codec.Binary.Base16 as B16
-import qualified Codec.Binary.Base85 as B85
-import qualified Codec.Binary.QuotedPrintable as QP
-import qualified Codec.Binary.Uu as Uu
-import qualified Codec.Binary.Xx as Xx
--- import qualified Codec.Binary.PythonString as PS
--- import qualified Codec.Binary.Url as Url
+import qualified Data.Conduit.Codec.Base64 as B64
+import qualified Data.Conduit.Codec.Base64Url as B64U
+import qualified Data.Conduit.Codec.Base32 as B32
+import qualified Data.Conduit.Codec.Base32Hex as B32H
+import qualified Data.Conduit.Codec.Base16 as B16
+import qualified Data.Conduit.Codec.Base85 as B85
+import qualified Data.Conduit.Codec.QuotedPrintable as QP
+import qualified Data.Conduit.Codec.Uu as Uu
+import qualified Data.Conduit.Codec.Xx as Xx
 
 -- {{{1 command line options
 ver :: String
@@ -50,7 +51,7 @@ ver = "omnicode decode (odec) " ++ (showVersion version)
 data Codec = B64 | B64U | B32 | B32H | B16 | B85 | QP | Uu | Xx
     deriving(Show, Eq, Data, Typeable)
 
-codecMap :: [(Codec, BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString)]
+codecMap :: [(Codec, Conduit ByteString (ResourceT IO) ByteString)]
 codecMap =
     [ (B64, B64.decode)
     , (B64U, B64U.decode)
@@ -92,10 +93,10 @@ myArgs = MyArgs
 main :: IO ()
 main = do
     cmdArgs myArgs >>= \ a -> do
-    let encFunc = lookup (argCodec a) codecMap
+    let decFunc = lookup (argCodec a) codecMap
     withMaybeFile (argInput a) ReadMode $ \ inputFile ->
         withMaybeFile (argOutput a) WriteMode $ \ outputFile ->
-            decodeFile (fromJust encFunc) inputFile outputFile
+            runResourceT $ decodeFile (fromJust decFunc) inputFile outputFile
 
 withMaybeFile :: Maybe FilePath -> IOMode -> (Handle -> IO r) -> IO r
 withMaybeFile fn mode func = let
@@ -107,12 +108,6 @@ withMaybeFile fn mode func = let
         hClose
         func
 
-decodeFile :: (BS.ByteString -> Either a BS.ByteString) -> Handle -> Handle -> IO ()
-decodeFile decFunc inF outF = let
-        writeToFile d = either
-            (const $ SIO.hPutStrLn stderr "Decoding failed!" >> exitFailure)
-            (BS.hPut outF)
-            (decFunc d)
-    in do
-        inData <- BS.hGet inF 4096
-        unless (BS.null inData) $ writeToFile inData >> decodeFile decFunc inF outF
+-- decodeFile :: (BS.ByteString -> Either a BS.ByteString) -> Handle -> Handle -> IO ()
+decodeFile :: (MonadIO m) => Conduit ByteString m ByteString -> Handle -> Handle -> m ()
+decodeFile decFunc inF outF = sourceHandle inF $= decFunc $$ sinkHandle outF
