@@ -1,5 +1,5 @@
 name: sandi
-version: 0.2
+version: 0.2.999
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.8
@@ -8,7 +8,7 @@ author: Magnus Therning
 maintainer: magnus@therning.org
 homepage: http://hackage.haskell.org/package/sandi
 copyright: Magnus Therning, 2012
-category: Codec
+category: Codec Conduit
 synopsis: Data encoding library
 description: Reasonably fast data encoding library.
 extra-source-files: csrc/*.h
