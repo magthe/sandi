@@ -19,17 +19,7 @@ source-repository head
 
 library
     hs-source-dirs: src
-    c-sources:
-        csrc/b16.c
-        csrc/b32.c
-        csrc/b32hex.c
-        csrc/b64.c
-        csrc/b64url.c
-        csrc/b85.c
-        csrc/qp.c
-        csrc/uu.c
-        csrc/xx.c
-        csrc/yenc.c
+    c-sources: csrc/codec.c
     include-dirs: csrc
     ghc-options: -Wall
     cc-options: -Wall -Wextra
