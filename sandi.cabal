@@ -25,7 +25,9 @@ library
     cc-options: -Wall -Wextra
     build-depends:
         base ==4.6.*,
-        bytestring ==0.10.*
+        bytestring ==0.10.*,
+        conduit ==1.0.*,
+        resourcet ==0.4.*
     exposed-modules:
             Codec.Binary.Base16
             Codec.Binary.Base32
@@ -37,6 +39,18 @@ library
             Codec.Binary.Uu
             Codec.Binary.Xx
             Codec.Binary.Yenc
+            Data.Conduit.Codec.Base16
+            Data.Conduit.Codec.Base32
+            Data.Conduit.Codec.Base32Hex
+            Data.Conduit.Codec.Base64
+            Data.Conduit.Codec.Base64Url
+            Data.Conduit.Codec.Base85
+            Data.Conduit.Codec.QuotedPrintable
+            Data.Conduit.Codec.Uu
+            Data.Conduit.Codec.Xx
+            Data.Conduit.Codec.Yenc
+    other-modules:
+        Data.Conduit.Codec.Util
 
 test-suite sandi-tests
     type: exitcode-stdio-1.0
