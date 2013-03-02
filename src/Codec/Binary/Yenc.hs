@@ -61,30 +61,31 @@ y_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -
 -- | Decoding function.
 --
 -- >>> y_dec $ Data.ByteString.pack [144,153,153,140,139,156]
--- Right "foobar"
+-- Right ("foobar","")
 -- >>> y_dec $ Data.ByteString.Char8.pack "=}"
--- Right "\DC3"
+-- Right ("\DC3","")
 --
--- A @Left@ value is only ever returned on decoding errors.
+-- A @Left@ value is only ever returned on decoding errors which, due to
+-- characteristics of the encoding, can never happen.
 --
 -- >>> y_dec $ Data.ByteString.Char8.pack "="
--- Left ("","=")
-y_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
+-- Right ("","=")
+y_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 y_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
                 poke pOutLen (castEnum inLen)
-                _ <- c_y_dec (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
+                r <- c_y_dec (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 newOutBuf <- reallocBytes outBuf (castEnum outLen)
                 remBuf <- peek pRemBuf
                 remLen <- peek pRemLen
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
                 outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
-                if remLen == 0
-                    then return $ Right outBs
+                if r == 0
+                    then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
 -- | Convenient function that calls 'y_enc' repeatedly until the whole input
@@ -94,4 +95,8 @@ encode = BS.concat . takeWhile (not . BS.null) . unfoldr (Just . y_enc)
 
 -- | A synonym for 'y_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode = y_dec
+decode bs = case y_dec bs of
+    Right a@(d, r) -> if BS.null r
+        then Right d
+        else Left a
+    Left a -> Left a
