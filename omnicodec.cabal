@@ -1,12 +1,13 @@
 name: omnicodec
-version: 0.6
+version: 0.6.999
 license: OtherLicense
 license-file: COPYING
 author: Magnus Therning
 maintainer: magnus@therning.org
 copyright: Magnus Therning, 2012
 synopsis: data encoding and decoding command line utilities
-description: Two simple command line tools built on sandi.
+description: Two simple command line tools built on sandi
+    (http://hackage.haskell.org/package/sandi).
 build-type: Simple
 category: Codec
 cabal-version: >= 1.6
