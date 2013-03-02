@@ -5,7 +5,7 @@
 
 #include "b64.h"
 
-static char const encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static char const b64_encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 void b64_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -25,10 +25,10 @@ void b64_enc_part(uint8_t const *src, size_t srclen,
         o1 = ((src[i] << 4) | (src[i+1] >> 4)) & 0x3f;
         o2 = ((src[i+1] << 2) | (src[i+2] >> 6)) & 0x3f;
         o3 = src[i+2] & 0x3f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
-        *dst++ = encmap[o3];
+        *dst++ = b64_encmap[o0];
+        *dst++ = b64_encmap[o1];
+        *dst++ = b64_encmap[o2];
+        *dst++ = b64_encmap[o3];
     }
 
     *rem = src + i;
@@ -43,7 +43,7 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
     assert(dstlen);
 
     switch(srclen) {
-        int32_t o0, o1, o2, o3;
+        int32_t o0, o1, o2;
     case 0:
         *dstlen = 0;
         return(0);
@@ -51,8 +51,8 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
     case 1:
         o0 = src[0] >> 2;
         o1 = (src[0] << 4) & 0x3f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
+        *dst++ = b64_encmap[o0];
+        *dst++ = b64_encmap[o1];
         *dst++ = '=';
         *dst++ = '=';
         *dstlen = 4;
@@ -62,9 +62,9 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
         o0 = src[0] >> 2;
         o1 = ((src[0] << 4) | (src[1] >> 4)) & 0x3f;
         o2 = (src[1] << 2) & 0x3f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
+        *dst++ = b64_encmap[o0];
+        *dst++ = b64_encmap[o1];
+        *dst++ = b64_encmap[o2];
         *dst++ = '=';
         *dstlen = 4;
         return(0);
@@ -76,7 +76,7 @@ int b64_enc_final(uint8_t const *src, size_t srclen,
 }
 
 // decode map, 0x80 = not allowed, 0x40 = end char
-static uint8_t const decmap[] = {
+static uint8_t const b64_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x3e, 0x80, 0x80, 0x80, 0x3f,
@@ -111,16 +111,16 @@ int b64_dec_part(uint8_t const *src, size_t srclen,
     for(i = 0, *dstlen = 0; i + 4 <= srclen && *dstlen + 3 <= od; i += 4, *dstlen += 3) {
         uint8_t o0, o1, o2, o3;
 
-        o0 = decmap[src[i]];
-        o1 = decmap[src[i+1]];
-        o2 = decmap[src[i+2]];
-        o3 = decmap[src[i+3]];
+        o0 = b64_decmap[src[i]];
+        o1 = b64_decmap[src[i+1]];
+        o2 = b64_decmap[src[i+2]];
+        o3 = b64_decmap[src[i+3]];
         if(!(0xc0 & (o0 | o1 | o2 | o3))) { // no illegal chars, and no '='
             *dst++ = (o0 << 2) | (o1 >> 4);
             *dst++ = (o1 << 4) | (o2 >> 2);
             *dst++ = (o2 << 6) | o3;
-        } else if(!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3) // two legal chars, two '='
-            || !(0xc0 & (o0 | o1 | o2)) && (0x40 & o3)) { // three legal chars, one '='
+        } else if((!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3)) // two legal chars, two '='
+            || (!(0xc0 & (o0 | o1 | o2)) && (0x40 & o3))) { // three legal chars, one '='
             res = 0;
             break;
         } else {
@@ -147,10 +147,10 @@ int b64_dec_final(uint8_t const *src, size_t srclen,
         *dstlen = 0;
         return(0);
     }
-    o0 = decmap[src[0]];
-    o1 = decmap[src[1]];
-    o2 = decmap[src[2]];
-    o3 = decmap[src[3]];
+    o0 = b64_decmap[src[0]];
+    o1 = b64_decmap[src[1]];
+    o2 = b64_decmap[src[2]];
+    o3 = b64_decmap[src[3]];
     if(!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3)) { // two legal chars, two '='
         *dst++ = (o0 << 2) | (o1 >> 4);
         *dstlen = 1;

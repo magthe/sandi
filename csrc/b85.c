@@ -6,8 +6,8 @@
 
 #include "b85.h"
 
-uint8_t zeroes[] = { 0, 0, 0, 0 };
-uint8_t spaces[] = { 0x20, 0x20, 0x20, 0x20 };
+uint8_t b85_zeroes[] = { 0, 0, 0, 0 };
+uint8_t b85_spaces[] = { 0x20, 0x20, 0x20, 0x20 };
 
 void b85_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -22,10 +22,10 @@ void b85_enc_part(uint8_t const *src, size_t srclen,
     size_t od = *dstlen, i;
 
     for(i = 0, *dstlen = 0; i + 4 <= srclen && *dstlen < od; i += 4) {
-        if(memcmp(src + i, zeroes, 4) == 0) {
+        if(memcmp(src + i, b85_zeroes, 4) == 0) {
             dst[*dstlen] = 'z';
             *dstlen += 1;
-        } else if(memcmp(src + i, spaces, 4) == 0) {
+        } else if(memcmp(src + i, b85_spaces, 4) == 0) {
             dst[*dstlen] = 'y';
             *dstlen += 1;
         } else {
@@ -91,7 +91,7 @@ int b85_enc_final(uint8_t const *src, size_t srclen,
     }
 }
 
-static uint8_t const decmap[] = {
+static uint8_t const b85_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
@@ -136,11 +136,11 @@ int b85_dec_part(uint8_t const *src, size_t srclen,
             break;
         default:
             if(srclen < i + 5) { res = 0; goto exit; }
-            o0 = decmap[src[i]];
-            o1 = decmap[src[i + 1]];
-            o2 = decmap[src[i + 2]];
-            o3 = decmap[src[i + 3]];
-            o4 = decmap[src[i + 4]];
+            o0 = b85_decmap[src[i]];
+            o1 = b85_decmap[src[i + 1]];
+            o2 = b85_decmap[src[i + 2]];
+            o3 = b85_decmap[src[i + 3]];
+            o4 = b85_decmap[src[i + 4]];
             if(0x80 & (o0 | o1 | o2 | o3 | o4)) { res = 1; goto exit; }
             v = o0 * 52200625; // 85 ** 4
             v += o1 * 614125; // 85 ** 3
@@ -176,11 +176,11 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
         return(0);
         break;
     case 2:
-        o0 = decmap[src[0]];
-        o1 = decmap[src[1]];
-        o2 = decmap['u'];
-        o3 = decmap['u'];
-        o4 = decmap['u'];
+        o0 = b85_decmap[src[0]];
+        o1 = b85_decmap[src[1]];
+        o2 = b85_decmap[(uint8_t)'u'];
+        o3 = b85_decmap[(uint8_t)'u'];
+        o4 = b85_decmap[(uint8_t)'u'];
         if(0x80 & ( o0 | o1)) { return(1); }
         v = o0 * 52200625; // 85 ** 4
         v += o1 * 614125; // 85 ** 3
@@ -193,11 +193,11 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
         return(0);
         break;
     case 3:
-        o0 = decmap[src[0]];
-        o1 = decmap[src[1]];
-        o2 = decmap[src[2]];
-        o3 = decmap['u'];
-        o4 = decmap['u'];
+        o0 = b85_decmap[src[0]];
+        o1 = b85_decmap[src[1]];
+        o2 = b85_decmap[src[2]];
+        o3 = b85_decmap[(uint8_t)'u'];
+        o4 = b85_decmap[(uint8_t)'u'];
         if(0x80 & ( o0 | o1 | o2)) { return(1); }
         v = o0 * 52200625; // 85 ** 4
         v += o1 * 614125; // 85 ** 3
@@ -211,11 +211,11 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
         return(0);
         break;
     case 4:
-        o0 = decmap[src[0]];
-        o1 = decmap[src[1]];
-        o2 = decmap[src[2]];
-        o3 = decmap[src[3]];
-        o4 = decmap['u'];
+        o0 = b85_decmap[src[0]];
+        o1 = b85_decmap[src[1]];
+        o2 = b85_decmap[src[2]];
+        o3 = b85_decmap[src[3]];
+        o4 = b85_decmap[(uint8_t)'u'];
         if(0x80 & ( o0 | o1 | o2 | o3)) { return(1); }
         v = o0 * 52200625; // 85 ** 4
         v += o1 * 614125; // 85 ** 3

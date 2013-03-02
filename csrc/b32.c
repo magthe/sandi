@@ -5,7 +5,7 @@
 
 #include "b32.h"
 
-static char const encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+static char const b32_encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 void b32_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -29,14 +29,14 @@ void b32_enc_part(uint8_t const *src, size_t srclen,
         o5 = (src[i+3] >>2) & 0x1f;
         o6 = ((src[i+3] << 3) | (src[i+4] >> 5)) & 0x1f;
         o7 = src[i+4] & 0x1f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
-        *dst++ = encmap[o3];
-        *dst++ = encmap[o4];
-        *dst++ = encmap[o5];
-        *dst++ = encmap[o6];
-        *dst++ = encmap[o7];
+        *dst++ = b32_encmap[o0];
+        *dst++ = b32_encmap[o1];
+        *dst++ = b32_encmap[o2];
+        *dst++ = b32_encmap[o3];
+        *dst++ = b32_encmap[o4];
+        *dst++ = b32_encmap[o5];
+        *dst++ = b32_encmap[o6];
+        *dst++ = b32_encmap[o7];
     }
 
     *rem = src + i;
@@ -51,7 +51,7 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
     assert(dstlen);
 
     switch(srclen) {
-        int32_t o0, o1, o2, o3, o4, o5, o6, o7;
+        int32_t o0, o1, o2, o3, o4, o5, o6;
     case 0:
         *dstlen = 0;
         return(0);
@@ -59,8 +59,8 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
     case 1:
         o0 = src[0] >> 3;
         o1 = (src[0] << 2) & 0x1f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
+        *dst++ = b32_encmap[o0];
+        *dst++ = b32_encmap[o1];
         *dst++ = '=';
         *dst++ = '=';
         *dst++ = '=';
@@ -75,10 +75,10 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
         o1 = ((src[0] << 2) | (src[1] >> 6)) & 0x1f;
         o2 = (src[1] >> 1) & 0x1f;
         o3 = src[1] << 4 & 0x1f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
-        *dst++ = encmap[o3];
+        *dst++ = b32_encmap[o0];
+        *dst++ = b32_encmap[o1];
+        *dst++ = b32_encmap[o2];
+        *dst++ = b32_encmap[o3];
         *dst++ = '=';
         *dst++ = '=';
         *dst++ = '=';
@@ -92,11 +92,11 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
         o2 = (src[1] >> 1) & 0x1f;
         o3 = ((src[1] << 4) | (src[2] >> 4)) & 0x1f;
         o4 = (src[2] << 1) & 0x1f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
-        *dst++ = encmap[o3];
-        *dst++ = encmap[o4];
+        *dst++ = b32_encmap[o0];
+        *dst++ = b32_encmap[o1];
+        *dst++ = b32_encmap[o2];
+        *dst++ = b32_encmap[o3];
+        *dst++ = b32_encmap[o4];
         *dst++ = '=';
         *dst++ = '=';
         *dst++ = '=';
@@ -111,13 +111,13 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
         o4 = ((src[2] << 1) | (src[3] >> 7)) & 0x1f;
         o5 = (src[3] >>2) & 0x1f;
         o6 = (src[3] << 3) & 0x1f;
-        *dst++ = encmap[o0];
-        *dst++ = encmap[o1];
-        *dst++ = encmap[o2];
-        *dst++ = encmap[o3];
-        *dst++ = encmap[o4];
-        *dst++ = encmap[o5];
-        *dst++ = encmap[o6];
+        *dst++ = b32_encmap[o0];
+        *dst++ = b32_encmap[o1];
+        *dst++ = b32_encmap[o2];
+        *dst++ = b32_encmap[o3];
+        *dst++ = b32_encmap[o4];
+        *dst++ = b32_encmap[o5];
+        *dst++ = b32_encmap[o6];
         *dst++ = '=';
         *dstlen = 8;
         return(0);
@@ -129,7 +129,7 @@ int b32_enc_final(uint8_t const *src, size_t srclen,
 }
 
 // decode map, 0x80 = not allowed, 0x40 = end char
-static uint8_t const decmap[] = {
+static uint8_t const b32_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -163,24 +163,24 @@ int b32_dec_part(uint8_t const *src, size_t srclen,
     for(i = 0, *dstlen = 0; i + 8 <= srclen && *dstlen + 5 <= od; i += 8, *dstlen += 5) {
         uint8_t o0, o1, o2, o3, o4, o5, o6, o7;
 
-        o0 = decmap[src[i]];
-        o1 = decmap[src[i+1]];
-        o2 = decmap[src[i+2]];
-        o3 = decmap[src[i+3]];
-        o4 = decmap[src[i+4]];
-        o5 = decmap[src[i+5]];
-        o6 = decmap[src[i+6]];
-        o7 = decmap[src[i+7]];
+        o0 = b32_decmap[src[i]];
+        o1 = b32_decmap[src[i+1]];
+        o2 = b32_decmap[src[i+2]];
+        o3 = b32_decmap[src[i+3]];
+        o4 = b32_decmap[src[i+4]];
+        o5 = b32_decmap[src[i+5]];
+        o6 = b32_decmap[src[i+6]];
+        o7 = b32_decmap[src[i+7]];
         if(!(0xc0 & (o0 | o1 | o2 | o3 | o4 | o5 | o6 | o7))) { // no illegal chars, and no '='
             *dst++ = (o0 << 3) | (o1 >> 2);
             *dst++ = (o1 << 6) | (o2 << 1) | (o3 >> 4);
             *dst++ = (o3 << 4) | (o4 >> 1);
             *dst++ = (o4 << 7) | (o5 << 2) | (o6 >> 3);
             *dst++ = (o6 << 5) | o7;
-        } else if(!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3 & o4 & o5 & o6 & o7) // two legal chars, six '='
-            || !(0xc0 & (o0 | o1 | o2 | o3)) && (0x40 & o4 & o5 & o6 & o7) // four legal chars, four '='
-            || !(0xc0 & (o0 | o1 | o2 | o3 | o4)) && (0x40 & o5 & o6 & o7) // five legal chars, three '='
-            || !(0xc0 & (o0 | o1 | o2 | o3 | o4 | o5 | o6)) && (0x40 & o7)) { // seven legal chars, one '='
+        } else if((!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3 & o4 & o5 & o6 & o7)) // two legal chars, six '='
+            || (!(0xc0 & (o0 | o1 | o2 | o3)) && (0x40 & o4 & o5 & o6 & o7)) // four legal chars, four '='
+            || (!(0xc0 & (o0 | o1 | o2 | o3 | o4)) && (0x40 & o5 & o6 & o7)) // five legal chars, three '='
+            || (!(0xc0 & (o0 | o1 | o2 | o3 | o4 | o5 | o6)) && (0x40 & o7))) { // seven legal chars, one '='
             res = 0;
             break;
         } else {
@@ -207,14 +207,14 @@ int b32_dec_final(uint8_t const *src, size_t srclen,
         *dstlen = 0;
         return(0);
     }
-    o0 = decmap[src[0]];
-    o1 = decmap[src[1]];
-    o2 = decmap[src[2]];
-    o3 = decmap[src[3]];
-    o4 = decmap[src[4]];
-    o5 = decmap[src[5]];
-    o6 = decmap[src[6]];
-    o7 = decmap[src[7]];
+    o0 = b32_decmap[src[0]];
+    o1 = b32_decmap[src[1]];
+    o2 = b32_decmap[src[2]];
+    o3 = b32_decmap[src[3]];
+    o4 = b32_decmap[src[4]];
+    o5 = b32_decmap[src[5]];
+    o6 = b32_decmap[src[6]];
+    o7 = b32_decmap[src[7]];
     if(!(0xc0 & (o0 | o1)) && (0x40 & o2 & o3 & o4 & o5 & o6 & o7)) { // two legal chars, six '='
         *dst++ = (o0 << 3) | (o1 >> 2);
         *dst++ = (o1 << 6);

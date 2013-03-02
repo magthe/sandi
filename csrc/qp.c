@@ -5,7 +5,7 @@
 
 #include "qp.h"
 
-static char const encmap[] = "0123456789ABCDEF";
+static char const qp_encmap[] = "0123456789ABCDEF";
 
 void qp_enc(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -27,8 +27,8 @@ void qp_enc(uint8_t const *src, size_t srclen,
             uint8_t o0 = src[i] >> 4, o1 = src[i] & 0x0f;
             if(*dstlen + 3 >= od) goto exit;
             dst[*dstlen] = '=';
-            dst[*dstlen + 1] = encmap[o0];
-            dst[*dstlen + 2] = encmap[o1];
+            dst[*dstlen + 1] = qp_encmap[o0];
+            dst[*dstlen + 2] = qp_encmap[o1];
             *dstlen += 2;
         }
     }
@@ -38,7 +38,7 @@ exit:
     *remlen = srclen -i;
 }
 
-static uint8_t const decmap[] = {
+static uint8_t const qp_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -76,7 +76,7 @@ int qp_dec(uint8_t const *src, size_t srclen,
             dst[*dstlen] = src[i];
         } else if('=' == src[i]) {
             if(i + 2 >= srclen) { res = 1; goto exit; }
-            uint8_t o0 = decmap[src[i + 1]], o1 = decmap[src[i + 2]];
+            uint8_t o0 = qp_decmap[src[i + 1]], o1 = qp_decmap[src[i + 2]];
             if((o0 | o1) & 0xf0) { res = 1; break; }
             dst[*dstlen] = o0 << 4 | o1;
             i += 2;

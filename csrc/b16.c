@@ -5,7 +5,7 @@
 
 #include "b16.h"
 
-static char const encmap[] = "0123456789ABCDEF";
+static char const b16_encmap[] = "0123456789ABCDEF";
 
 void b16_enc(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -21,15 +21,15 @@ void b16_enc(uint8_t const *src, size_t srclen,
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen + 1 < od; i++, *dstlen += 2) {
         uint8_t o0 = src[i] >> 4, o1 = src[i] & 0x0f;
-        dst[*dstlen] = encmap[o0];
-        dst[*dstlen + 1] = encmap[o1];
+        dst[*dstlen] = b16_encmap[o0];
+        dst[*dstlen + 1] = b16_encmap[o1];
     }
 
     *rem = src + i;
     *remlen = srclen - i;
 }
 
-static uint8_t const decmap[] = {
+static uint8_t const b16_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -63,7 +63,7 @@ int b16_dec(uint8_t const *src, size_t srclen,
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i += 2, (*dstlen)++) {
         if(i + 1 >= srclen) { res = 1; break; }
-        uint8_t o0 = decmap[src[i]], o1 = decmap[src[i + 1]];
+        uint8_t o0 = b16_decmap[src[i]], o1 = b16_decmap[src[i + 1]];
         if((o0 | o1) & 0xf0) { res = 1; break; }
         else dst[*dstlen] = o0 << 4 | o1;
     }
