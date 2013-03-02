@@ -1,0 +1,2 @@
+let g:ghcmod_ghc_options = ['-isrc', '-idist/build/autogen']
+let g:syntastic_haskell_checker_args = '--ghcOpt="-isrc:dist/build/autogen" --ghcOpt="-fno-code" --hlintOpt="--language=XmlSyntax"'
