@@ -22,8 +22,6 @@ module Codec.Binary.Base32
 
 import Foreign
 import Foreign.C.Types
-import Foreign.Marshal.Alloc
-import Foreign.Ptr
 import qualified Data.ByteString as BS
 import Data.ByteString.Unsafe
 import System.IO.Unsafe as U

@@ -164,7 +164,7 @@ encode bs = let
 -- "foobar"
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
 decode bs = let
-        iterateDecode bss rem = case b85_decode_part rem of
+        iterateDecode bss re = case b85_decode_part re of
             Right (d, r) ->
                 if BS.null d
                     then Right (BS.concat (reverse bss), r)

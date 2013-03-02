@@ -31,6 +31,8 @@ library
         csrc/xx.c
         csrc/yenc.c
     include-dirs: csrc
+    ghc-options: -Wall
+    cc-options: -Wall -Wextra
     build-depends:
         base ==4.6.*,
         bytestring ==0.10.*
