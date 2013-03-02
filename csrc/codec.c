@@ -1183,7 +1183,7 @@ int qp_dec(uint8_t const *src, size_t srclen,
             (62 <= src[i] && src[i] <= 126)) {
             dst[*dstlen] = src[i];
         } else if('=' == src[i]) {
-            if(i + 2 >= srclen) { res = 1; goto exit; }
+            if(i + 2 >= srclen) { res = 0; goto exit; }
             uint8_t o0 = qp_decmap[src[i + 1]], o1 = qp_decmap[src[i + 2]];
             if((o0 | o1) & 0xf0) { res = 1; break; }
             dst[*dstlen] = o0 << 4 | o1;

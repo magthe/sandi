@@ -83,17 +83,17 @@ qp_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) 
 -- representation:
 --
 -- >>> qp_dec $ Data.ByteString.Char8.pack "=20!"
--- Right " !"
+-- Right (" !","")
 -- >>> qp_dec $ Data.ByteString.Char8.pack "=20=21"
--- Right " !"
+-- Right (" !","")
 --
 -- A @Left@ value is only ever returned on decoding errors.
 --
 -- >>> qp_dec $ Data.ByteString.Char8.pack "=2"
--- Left ("","=2")
+-- Right ("","=2")
 -- >>> qp_dec $ Data.ByteString.Char8.pack "=2g"
 -- Left ("","=2g")
-qp_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
+qp_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 qp_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
     alloca $ \ pOutLen ->
@@ -108,7 +108,7 @@ qp_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) 
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
                 outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if r == 0
-                    then return $ Right outBs
+                    then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
 -- | Convenient function that calls 'qp_enc' repeatedly until the whole input
@@ -118,4 +118,8 @@ encode = BS.concat . takeWhile (not . BS.null) . unfoldr (Just . qp_enc)
 
 -- | A synonym for 'qp_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode = qp_dec
+decode bs = case qp_dec bs of
+    Right a@(d, r) -> if BS.null r
+            then Right d
+            else Left a
+    Left a -> Left a
