@@ -56,20 +56,23 @@ b16_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen)
 
 -- | Decoding function.
 --
--- The returned value on success is @Right \<decoded string>@, and on failure
--- it's @Left (\<decoded part\>, \<undecodable part>)@.  Space equal to the
--- length of the input string is allocated, which is more than enough to hold
--- the decoded data.
+-- The returned value on success is @Right (\<decoded part>, \<undecoded
+-- part>)@ (the undecoded part is either a empty or a single byte), and on
+-- failure it's @Left (\<decoded part\>, \<undecodable part>)@.  Space equal to
+-- the length of the input string is allocated, which is more than enough to
+-- hold the decoded data.
 --
 -- >>> b16_dec $ Data.ByteString.Char8.pack "00"
--- Right "\NUL"
+-- Right ("\NUL","")
 --
 -- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F626172"
--- Right "foobar"
+-- Right ("foobar","")
 --
 -- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F62617"
--- Left ("fooba","7")
-b16_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
+-- Right ("fooba","7")
+-- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F62617g"
+-- Left ("fooba","g")
+b16_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 b16_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
     alloca $ \ pOutLen ->
@@ -84,7 +87,7 @@ b16_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen)
                 remBs <- BS.packCStringLen (castPtr remBuf, castEnum remLen)
                 outBs <- BSU.unsafePackCStringFinalizer newOutBuf (castEnum outLen) (free newOutBuf)
                 if r == 0
-                    then return $ Right outBs
+                    then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
 -- | A synonym for 'b16_enc'.
@@ -93,4 +96,8 @@ encode = b16_enc
 
 -- | A synonum for 'b16_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode = b16_dec
+decode bs = case b16_dec bs of
+    Right a@(d, r) -> if BS.null r
+            then Right d
+            else Left a
+    Left a -> Left a

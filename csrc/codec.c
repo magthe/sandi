@@ -64,7 +64,7 @@ int b16_dec(uint8_t const *src, size_t srclen,
     assert(remlen);
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i += 2, (*dstlen)++) {
-        if(i + 1 >= srclen) { res = 1; break; }
+        if(i + 1 >= srclen) { res = 0; break; }
         uint8_t o0 = b16_decmap[src[i]], o1 = b16_decmap[src[i + 1]];
         if((o0 | o1) & 0xf0) { res = 1; break; }
         else dst[*dstlen] = o0 << 4 | o1;
