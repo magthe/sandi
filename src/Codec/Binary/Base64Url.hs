@@ -16,16 +16,14 @@
 module Codec.Binary.Base64Url
     ( b64u_encode_part
     , b64u_encode_final
-    , b64url_decode_part
-    , b64url_decode_final
+    , b64u_decode_part
+    , b64u_decode_final
     , encode
     , decode
     ) where
 
 import Foreign
 import Foreign.C.Types
-import Foreign.Marshal.Alloc
-import Foreign.Ptr
 import qualified Data.ByteString as BS
 import Data.ByteString.Unsafe
 import System.IO.Unsafe as U
@@ -74,8 +72,8 @@ b64u_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, 
                 return $ Just outBs
             else free outBuf >> return Nothing
 
-b64url_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b64url_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64u_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b64u_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -93,8 +91,8 @@ b64url_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf,
                     then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
-b64url_decode_final :: BS.ByteString -> Maybe BS.ByteString
-b64url_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64u_decode_final :: BS.ByteString -> Maybe BS.ByteString
+b64u_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 3
     alloca $ \ pOutLen -> do
         r <- c_b64u_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -119,5 +117,5 @@ decode bs = either
         maybe
             (Left (first, rest))
             (\ fin -> Right (first `BS.append` fin))
-            (b64url_decode_final rest))
-    (b64url_decode_part bs)
+            (b64u_decode_final rest))
+    (b64u_decode_part bs)
