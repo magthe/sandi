@@ -26,8 +26,7 @@ library
     build-depends:
         base ==4.6.*,
         bytestring ==0.10.*,
-        conduit ==1.0.*,
-        resourcet ==0.4.*
+        conduit ==1.0.*
     exposed-modules:
             Codec.Binary.Base16
             Codec.Binary.Base32
