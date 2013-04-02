@@ -1,2 +1,4 @@
 let g:ghcmod_ghc_options = ['-isrc', '-itest-src']
 let g:syntastic_haskell_checker_args = '--ghcOpt="-isrc:test-src" --ghcOpt="-fno-code" --hlintOpt="--language=XmlSyntax"'
+
+let g:ycm_confirm_extra_conf = 0
