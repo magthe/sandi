@@ -54,7 +54,6 @@ library
 test-suite sandi-tests
     type: exitcode-stdio-1.0
     hs-source-dirs: src, test-src
-    main-is: Main.hs
     build-depends:
         sandi,
         base,
@@ -64,13 +63,36 @@ test-suite sandi-tests
         test-framework-hunit,
         test-framework-th,
         test-framework
+    main-is: Main.hs
+    other-modules:
+        Codec.Binary.Base16Test
+        Codec.Binary.Base32HexTest
+        Codec.Binary.Base32Test
+        Codec.Binary.Base64Test
+        Codec.Binary.Base64UrlTest
+        Codec.Binary.Base85Test
+        Codec.Binary.QuotedPrintableTest
+        Codec.Binary.UuTest
+        Codec.Binary.XxTest
+        Codec.Binary.YencTest
 
 benchmark sandi-bench
     type: exitcode-stdio-1.0
     hs-source-dirs:   src, bench-src
-    main-is: Main.hs
     build-depends:
         sandi,
         base,
         bytestring,
         criterion
+    main-is: Main.hs
+    other-modules:
+        Codec.Binary.Base16Bench
+        Codec.Binary.Base32Bench
+        Codec.Binary.Base32HexBench
+        Codec.Binary.Base64Bench
+        Codec.Binary.Base64UrlBench
+        Codec.Binary.Base85Bench
+        Codec.Binary.QuotedPrintableBench
+        Codec.Binary.UuBench
+        Codec.Binary.XxBench
+        Codec.Binary.YencBench
