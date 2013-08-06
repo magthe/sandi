@@ -84,13 +84,13 @@ void b32_enc_part(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
-    size_t od = *dstlen, i;
-
     assert(src || 0 == srclen);
     assert(dst);
     assert(dstlen);
     assert(rem);
     assert(remlen);
+
+    size_t od = *dstlen, i;
 
     for(i = 0, *dstlen = 0; i + 5 <= srclen && *dstlen + 8 <= od; i += 5, *dstlen += 8) {
         int32_t o0, o1, o2, o3, o4, o5, o6, o7;
