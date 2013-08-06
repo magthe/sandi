@@ -73,7 +73,7 @@ b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- Nothing
 b32h_encode_final :: BS.ByteString -> Maybe BS.ByteString
 b32h_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
-    outBuf <- mallocBytes 5
+    outBuf <- mallocBytes 8
     alloca $ \ pOutLen -> do
         r <- c_b32h_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
         if r == 0
