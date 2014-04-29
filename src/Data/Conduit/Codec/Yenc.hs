@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Yenc
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Yenc where
 
 import qualified Codec.Binary.Yenc as Y

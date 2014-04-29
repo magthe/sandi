@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Util
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 {-# OPTIONS_GHC -XDeriveDataTypeable #-}
 
 module Data.Conduit.Codec.Util

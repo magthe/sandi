@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Base64Url
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Base64Url where
 
 import qualified Codec.Binary.Base64Url as B64U

@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.QuotedPrintable
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.QuotedPrintable where
 
 import qualified Codec.Binary.QuotedPrintable as Qp

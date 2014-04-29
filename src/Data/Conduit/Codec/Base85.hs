@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Base85
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Base85 where
 
 import qualified Codec.Binary.Base85 as B85

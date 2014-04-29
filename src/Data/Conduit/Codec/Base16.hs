@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Base16
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Base16 where
 
 import qualified Codec.Binary.Base16 as B16

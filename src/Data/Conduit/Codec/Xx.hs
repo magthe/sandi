@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Xx
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Xx where
 
 import qualified Codec.Binary.Xx as Xx

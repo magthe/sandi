@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Uu
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Uu where
 
 import qualified Codec.Binary.Uu as Uu

@@ -1,3 +1,7 @@
+-- |
+-- Module: Data.Conduit.Codec.Base32Hex
+-- Copyright: (c) 2014 Magnus Therning
+-- License: BSD3
 module Data.Conduit.Codec.Base32Hex where
 
 import qualified Codec.Binary.Base32Hex as B32H
