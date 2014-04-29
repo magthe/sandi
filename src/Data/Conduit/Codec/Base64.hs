@@ -3,8 +3,9 @@ module Data.Conduit.Codec.Base64 where
 import qualified Codec.Binary.Base64 as B64
 import qualified Data.Conduit.Codec.Util as U
 
-import Data.Conduit (Conduit, MonadThrow)
+import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)
+import Data.Conduit (Conduit)
 
 encode :: (Monad m) => Conduit ByteString m ByteString
 encode = U.encodeI B64.b64_encode_part B64.b64_encode_final empty

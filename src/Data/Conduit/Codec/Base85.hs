@@ -3,8 +3,9 @@ module Data.Conduit.Codec.Base85 where
 import qualified Codec.Binary.Base85 as B85
 import qualified Data.Conduit.Codec.Util as U
 
-import Data.Conduit (Conduit, MonadThrow)
+import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)
+import Data.Conduit (Conduit)
 
 encode :: (Monad m) => Conduit ByteString m ByteString
 encode = U.encodeI B85.b85_encode_part B85.b85_encode_final empty

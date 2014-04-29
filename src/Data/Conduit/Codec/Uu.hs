@@ -3,8 +3,9 @@ module Data.Conduit.Codec.Uu where
 import qualified Codec.Binary.Uu as Uu
 import qualified Data.Conduit.Codec.Util as U
 
-import Data.Conduit (Conduit, MonadThrow)
+import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)
+import Data.Conduit (Conduit)
 
 encode :: (Monad m) => Conduit ByteString m ByteString
 encode = U.encodeI Uu.uu_encode_part Uu.uu_encode_final empty

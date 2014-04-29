@@ -3,8 +3,9 @@ module Data.Conduit.Codec.QuotedPrintable where
 import qualified Codec.Binary.QuotedPrintable as Qp
 import qualified Data.Conduit.Codec.Util as U
 
-import Data.Conduit
-import Data.ByteString as BS
+import Control.Monad.Catch (MonadThrow)
+import Data.ByteString (ByteString, empty)
+import Data.Conduit (Conduit)
 
 encode :: (Monad m) => Conduit ByteString m ByteString
 encode = U.encodeII Qp.encode

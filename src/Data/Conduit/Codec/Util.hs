@@ -11,9 +11,10 @@ module Data.Conduit.Codec.Util
 import Data.Typeable (Typeable)
 import Control.Exception (Exception)
 import Data.ByteString as BS (ByteString, append, null)
-import Data.Conduit (Conduit, MonadThrow, await, monadThrow, yield)
+import Data.Conduit (Conduit, await, yield)
 import Data.Maybe (fromJust)
 import Control.Monad (unless)
+import Control.Monad.Catch (MonadThrow, throwM)
 
 type EncFunc = ByteString -> ByteString
 type EncFuncPart = ByteString -> (ByteString, ByteString)
@@ -43,13 +44,13 @@ decodeI dec_part dec_final i = do
     case enc of
         Nothing -> 
             case dec_final i of
-                Nothing -> monadThrow (CodecDecodeException i)
+                Nothing -> throwM (CodecDecodeException i)
                 Just s -> yield s >> return ()
         Just s ->
             case dec_part (i `append` s) of
                 Left (a, b) -> do
                     unless (BS.null a) $ yield a
-                    monadThrow (CodecDecodeException b)
+                    throwM (CodecDecodeException b)
                 Right (a, b) -> do
                     unless (BS.null a) $ yield a
                     decodeI dec_part dec_final b
@@ -69,11 +70,11 @@ decodeII dec i = do
     case enc of
         Nothing -> if BS.null i
             then return ()
-            else monadThrow $ CodecDecodeException i
+            else throwM $ CodecDecodeException i
         Just s -> case (dec $ i `append` s) of
             Left (c, b) -> do
                 unless (BS.null c) $ yield c
-                monadThrow $ CodecDecodeException b
+                throwM $ CodecDecodeException b
             Right (c, r) -> do
                 unless (BS.null c) $ yield c
                 decodeII dec r
