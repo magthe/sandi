@@ -9,12 +9,12 @@ import qualified Codec.Binary.Base64Url as B64U
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Test.HUnit
-import Test.Framework (Test)
-import Test.Framework.TH
-import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2
 import Data.Word (Word8)
+
+import Test.Tasty
+import Test.Tasty.TH
+import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 case_enc_foobar :: IO ()
 case_enc_foobar = do
@@ -49,5 +49,5 @@ case_dec_specials = do
 prop_encdec :: [Word8] -> Bool
 prop_encdec ws = (BS.pack ws) == (fromRight $ B64U.decode $ B64U.encode $ BS.pack ws)
 
-tests :: Test.Framework.Test
+tests :: TestTree
 tests = $(testGroupGenerator)

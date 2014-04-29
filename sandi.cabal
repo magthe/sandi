@@ -60,10 +60,10 @@ test-suite sandi-tests
         base,
         bytestring,
         HUnit,
-        test-framework-quickcheck2,
-        test-framework-hunit,
-        test-framework-th,
-        test-framework
+        tasty,
+        tasty-hunit,
+        tasty-quickcheck,
+        tasty-th
     main-is: Main.hs
     other-modules:
         Codec.Binary.Base16Test

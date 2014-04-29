@@ -9,12 +9,12 @@ import qualified Codec.Binary.Base16 as B16
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Test.HUnit
-import Test.Framework (Test)
-import Test.Framework.TH
-import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2
 import Data.Word (Word8)
+
+import Test.Tasty
+import Test.Tasty.TH
+import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 case_b16_enc_foobar :: IO ()
 case_b16_enc_foobar = do
@@ -44,5 +44,5 @@ case_b16_dec_failure = do
 prop_b16_encdec :: [Word8] -> Bool
 prop_b16_encdec ws = (BS.pack ws) == (fromRight $ B16.decode $ B16.encode $ BS.pack ws)
 
-tests :: Test.Framework.Test
+tests :: TestTree
 tests = $(testGroupGenerator)

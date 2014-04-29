@@ -9,12 +9,12 @@ import qualified Codec.Binary.QuotedPrintable as QP
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import Test.HUnit
-import Test.Framework (Test)
-import Test.Framework.TH
-import Test.Framework.Providers.HUnit
-import Test.Framework.Providers.QuickCheck2
 import Data.Word (Word8)
+
+import Test.Tasty
+import Test.Tasty.TH
+import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 case_enc_foobar :: IO ()
 case_enc_foobar = do
@@ -29,5 +29,5 @@ case_dec_foobar = do
 prop_encdec :: [Word8] -> Bool
 prop_encdec ws = (BS.pack ws) == (fromRight $ QP.decode $ QP.encode $ BS.pack ws)
 
-tests :: Test.Framework.Test
+tests :: TestTree
 tests = $(testGroupGenerator)
