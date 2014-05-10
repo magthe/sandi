@@ -1,5 +1,5 @@
 name: sandi
-version: 0.3.0
+version: 0.3.999
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.8
