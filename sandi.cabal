@@ -1,5 +1,5 @@
 name: sandi
-version: 0.2.999
+version: 0.3.0
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.8
@@ -27,7 +27,7 @@ library
         base ==4.7.*,
         bytestring ==0.10.*,
         conduit ==1.1.*,
-        exceptions ==0.5.*
+        exceptions ==0.6.*
     exposed-modules:
             Codec.Binary.Base16
             Codec.Binary.Base32
