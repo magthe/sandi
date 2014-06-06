@@ -17,6 +17,10 @@ source-repository head
     type: git
     location: https://github.com/magthe/sandi
 
+flag with-conduit
+    default: True
+    manual: True
+
 library
     hs-source-dirs: src
     c-sources: csrc/codec.c
@@ -25,20 +29,24 @@ library
     cc-options: -Wall -Wextra
     build-depends:
         base ==4.7.*,
-        bytestring ==0.10.*,
-        conduit ==1.1.*,
-        exceptions ==0.6.*
+        bytestring ==0.10.*
     exposed-modules:
-            Codec.Binary.Base16
-            Codec.Binary.Base32
-            Codec.Binary.Base32Hex
-            Codec.Binary.Base64
-            Codec.Binary.Base64Url
-            Codec.Binary.Base85
-            Codec.Binary.QuotedPrintable
-            Codec.Binary.Uu
-            Codec.Binary.Xx
-            Codec.Binary.Yenc
+        Codec.Binary.Base16
+        Codec.Binary.Base32
+        Codec.Binary.Base32Hex
+        Codec.Binary.Base64
+        Codec.Binary.Base64Url
+        Codec.Binary.Base85
+        Codec.Binary.QuotedPrintable
+        Codec.Binary.Uu
+        Codec.Binary.Xx
+        Codec.Binary.Yenc
+
+    if flag(with-conduit)
+        build-depends:
+            conduit ==1.1.*,
+            exceptions ==0.6.*
+        exposed-modules:
             Data.Conduit.Codec.Base16
             Data.Conduit.Codec.Base32
             Data.Conduit.Codec.Base32Hex
@@ -49,8 +57,8 @@ library
             Data.Conduit.Codec.Uu
             Data.Conduit.Codec.Xx
             Data.Conduit.Codec.Yenc
-    other-modules:
-        Data.Conduit.Codec.Util
+        other-modules:
+            Data.Conduit.Codec.Util
 
 test-suite sandi-tests
     type: exitcode-stdio-1.0
