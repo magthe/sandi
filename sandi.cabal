@@ -26,7 +26,7 @@ library
     c-sources: csrc/codec.c
     include-dirs: csrc
     ghc-options: -Wall
-    cc-options: -Wall -Wextra
+    cc-options: -fPIC -Wall -Wextra
     build-depends:
         base ==4.7.*,
         bytestring ==0.10.*
