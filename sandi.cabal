@@ -1,5 +1,5 @@
 name: sandi
-version: 0.3.0
+version: 0.3.0.1
 license: BSD3
 license-file: LICENSE
 cabal-version: >= 1.8
@@ -24,7 +24,7 @@ library
     ghc-options: -Wall
     cc-options: -Wall -Wextra
     build-depends:
-        base ==4.7.*,
+        base ==4.6.* || ==4.7.*,
         bytestring ==0.10.*,
         conduit ==1.1.*,
         exceptions ==0.6.*
