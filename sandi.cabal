@@ -28,7 +28,7 @@ library
     ghc-options: -Wall
     cc-options: -fPIC -Wall -Wextra
     build-depends:
-        base ==4.7.*,
+        base ==4.8.*,
         bytestring ==0.10.*
     exposed-modules:
         Codec.Binary.Base16
