@@ -137,10 +137,10 @@ xx_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
             else free outBuf >> return Nothing
 
 encode :: BS.ByteString -> BS.ByteString
-encode bs = let
+encode bs = first `BS.append` final
+    where
         (first, rest) = xx_encode_part bs
         Just final = xx_encode_final rest
-    in first `BS.append` final
 
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
 decode bs = either

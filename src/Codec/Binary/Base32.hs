@@ -162,10 +162,10 @@ b32_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- >>> encode $ Data.ByteString.Char8.pack "foobar"
 -- "MZXW6YTBOI======"
 encode :: BS.ByteString -> BS.ByteString
-encode bs = let
+encode bs = first `BS.append` final
+    where
         (first, rest) = b32_encode_part bs
         Just final = b32_encode_final rest
-    in first `BS.append` final
 
 -- | Convenience function that combines 'b32_decode_part' and
 -- 'b32_decode_final' to decode a complete string.

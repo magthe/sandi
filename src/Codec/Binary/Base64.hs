@@ -162,10 +162,10 @@ b64_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- >>> encode $ Data.ByteString.Char8.pack "foobar"
 -- "Zm9vYmFy"
 encode :: BS.ByteString -> BS.ByteString
-encode bs = let
+encode bs = first `BS.append` final
+    where
         (first, rest) = b64_encode_part bs
         Just final = b64_encode_final rest
-    in first `BS.append` final
 
 -- | Convenience function that combines 'b64_decode_part' and
 -- 'b64_decode_final' to decode a complete string.

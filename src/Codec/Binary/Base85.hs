@@ -150,10 +150,10 @@ b85_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- >>> encode  $ Data.ByteString.Char8.pack "foobar"
 -- "AoDTs@<)"
 encode :: BS.ByteString -> BS.ByteString
-encode bs = let
+encode bs = first `BS.append` final
+    where
         (first, rest) = b85_encode_part bs
         Just final = b85_encode_final rest
-    in first `BS.append` final
 
 -- | Convenience function that combines 'b85_decode_part' and
 -- 'b85_decode_final' to decode a complete string.
@@ -163,7 +163,8 @@ encode bs = let
 -- >>> encode  $ Data.ByteString.Char8.pack "AoDTs@<)"
 -- "foobar"
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = let
+decode bs = either Left handleFinal (iterateDecode [] bs)
+    where
         iterateDecode bss re = case b85_decode_part re of
             Right (d, r) ->
                 if BS.null d
@@ -176,7 +177,3 @@ decode bs = let
             (\ final -> Right (first `BS.append` final))
             (b85_decode_final rest)
 
-    in either
-            Left
-            handleFinal
-            (iterateDecode [] bs)
