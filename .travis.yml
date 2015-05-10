@@ -1,0 +1,33 @@
+# must not use `language: haskell` here, since we want to handle the ghc
+# versions manually
+language: c
+
+# See also https://github.com/hvr/multi-ghc-travis for more information
+
+env:
+ - CABALVER=1.18 GHCVER=7.8.4
+ - CABALVER=1.22 GHCVER=7.10.1
+ # - CABALVER=head GHCVER=head
+
+before_install:
+ - travis_retry sudo add-apt-repository -y ppa:hvr/ghc
+ - travis_retry sudo apt-get update
+ - travis_retry sudo apt-get install cabal-install-$CABALVER ghc-$GHCVER
+ - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
+
+install:
+ - cabal --version
+ - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+ - travis_retry cabal update
+ - cabal install --only-dependencies --enable-tests
+
+script:
+ - cabal configure --enable-tests -v2
+ - cabal build
+ - cabal test
+ - cabal check
+
+ # check that a generated source-distribution can be built & installed
+ - cabal sdist
+ - SRC_TGZ=$(cabal info . | awk '{print $2;exit}').tar.gz &&
+   (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
