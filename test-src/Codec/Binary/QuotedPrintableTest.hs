@@ -28,6 +28,7 @@ case_dec_foobar = do
     Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foobar")
     Right (BSC.pack "foo bar") @=? QP.decode (BSC.pack "foo bar")
     Right (BSC.pack "foo bar") @=? QP.decode (BSC.pack "foo=20bar")
+    Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foo=\r\nbar")
 
 prop_encdec :: [Word8] -> Bool
 prop_encdec ws = (BS.pack ws) == (fromRight $ QP.decode $ QP.encode $ BS.pack ws)
