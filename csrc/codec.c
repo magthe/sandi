@@ -1179,7 +1179,8 @@ int qp_dec(uint8_t const *src, size_t srclen,
     int res = 0;
 
     for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
-        if((33 <= src[i] && src[i] <= 60) ||
+        if((9 == src[i]) ||
+            (32 <= src[i] && src[i] <= 60) ||
             (62 <= src[i] && src[i] <= 126)) {
             dst[*dstlen] = src[i];
         } else if('=' == src[i]) {
