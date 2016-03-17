@@ -1189,6 +1189,9 @@ int qp_dec(uint8_t const *src, size_t srclen,
             if((o0 | o1) & 0xf0) { res = 1; break; }
             dst[*dstlen] = o0 << 4 | o1;
             i += 2;
+        } else if(13 == src[i] && i + 1 < srclen && 10 == src[i + 1]) {
+            dst[(*dstlen)++] = src[i++];
+            dst[*dstlen] = src[i];
         } else { res = 1; goto exit; }
     }
 
