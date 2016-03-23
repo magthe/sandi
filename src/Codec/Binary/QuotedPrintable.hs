@@ -7,11 +7,6 @@
 --
 -- Implementation of Quoted-Printable based on RFC 2045
 -- (<http://tools.ietf.org/html/rfc2045>).
---
--- This encoding encodes /everything/ that is passed in, it will not try to
--- guess the native line ending for your architecture.  In other words, if you
--- are using this to encode text you need to split it into separate lines
--- before encoding.
 module Codec.Binary.QuotedPrintable
     ( qp_enc
     , qp_dec
@@ -37,6 +32,11 @@ foreign import ccall "static qp.h qp_dec"
 
 -- | Encoding function.
 --
+-- This function encodes /everything/ that is passed in, it will not try to
+-- guess the native line ending for your architecture.  In other words, if you
+-- are using this to encode text you need to split it into separate lines
+-- before encoding.
+--
 -- This function allocates enough space to hold twice the size of the indata
 -- (or at least 512 bytes) and then encodes as much as possible of the indata.
 -- That means there is a risk that the encoded data won't fit and in that case
@@ -46,6 +46,20 @@ foreign import ccall "static qp.h qp_dec"
 -- ("=3D","")
 -- >>> snd $ qp_enc $ Data.ByteString.Char8.pack $ Data.List.take 171 $ repeat '='
 -- "="
+--
+-- All space (0x20) and tab (0x9) characters are encoded:
+--
+-- >>> qp_enc $ Data.ByteString.Char8.pack " \t"
+-- ("=20=09","")
+--
+-- Since the input is supposed to have been split prior to calling this
+-- function all occurances of CR and LF are encoded.
+--
+-- >>> qp_enc $ Data.ByteString.Char8.pack "\n\r\r\n\n\r"
+-- ("=0A=0D=0D=0A=0A=0D","")
+--
+-- __Note__: This function will /not/ insert soft line breaks ('=' followed by
+-- CRLF) to limit line length to 76 characters. This could be considered a /bug/.
 qp_enc :: BS.ByteString -> (BS.ByteString, BS.ByteString)
 qp_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutBuf = max 512 (2 * inLen)
@@ -93,6 +107,28 @@ qp_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) 
 -- Right ("","=2")
 -- >>> qp_dec $ Data.ByteString.Char8.pack "=2g"
 -- Left ("","=2g")
+--
+-- Per the specification a CRLF pair is left in, but a single CR or LF is an
+-- error.
+--
+-- >>> qp_dec $ Data.ByteString.Char8.pack "\r\n"
+-- Right ("\r\n","")
+-- >>> qp_dec $ Data.ByteString.Char8.pack "\n"
+-- Left ("","\n")
+-- >>> qp_dec $ Data.ByteString.Char8.pack "\r"
+-- Left ("","\r")
+--
+-- the same goes for space and tab characters
+--
+-- >>> qp_dec $ Data.ByteString.Char8.pack " \t"
+-- Right (" \t","")
+--
+-- __Note__: The function doesn't deal with soft line breaks.
+--
+-- >>> qp_dec $ Data.ByteString.Char8.pack " =\r\n"
+-- Left (" ","=\r\n")
+--
+-- This could be considered a /bug/.
 qp_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 qp_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
@@ -118,8 +154,6 @@ encode = BS.concat . takeWhile (not . BS.null) . unfoldr (Just . qp_enc)
 
 -- | A synonym for 'qp_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = case qp_dec bs of
-    Right a@(d, r) -> if BS.null r
-            then Right d
-            else Left a
-    Left a -> Left a
+decode = either Left goR . qp_dec
+  where
+    goR a@(d, r) = if BS.null r then Right d else Left a
