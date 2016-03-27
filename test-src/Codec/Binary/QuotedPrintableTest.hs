@@ -32,7 +32,7 @@ case_dec_foobar = do
     Right (BSC.pack "foo\tbar") @=? QP.decode (BSC.pack "foo\tbar")
     Right (BSC.pack "foo\tbar") @=? QP.decode (BSC.pack "foo=09bar")
     Right (BSC.pack "foo\r\nbar") @=? QP.decode (BSC.pack "foo\r\nbar")
-    Left (BSC.pack "foo", BSC.pack "=\r\nbar") @=? QP.decode (BSC.pack "foo=\r\nbar")
+    Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foo=\r\nbar")
     Left (BSC.pack "foo", BSC.pack "\nbar") @=? QP.decode (BSC.pack "foo\nbar")
     Left (BSC.pack "foo", BSC.pack "\rbar") @=? QP.decode (BSC.pack "foo\rbar")
 
