@@ -69,7 +69,7 @@ int b85_dec_part(uint8_t const *src, size_t srclen,
 int b85_dec_final(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen);
 
-void qp_enc(uint8_t const *src, size_t srclen,
+void qp_enc(uint8_t split, uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen);
 int qp_dec(uint8_t const *src, size_t srclen,

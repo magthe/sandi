@@ -1,5 +1,5 @@
-{-# OPTIONS_GHC -XTemplateHaskell #-}
--- Copyright: (c) Magnus Therning, 2013
+{-# LANGUAGE TemplateHaskell #-}
+-- Copyright: (c) Magnus Therning, 2013-2015
 -- License: BSD3, found in the LICENSE file
 
 module Codec.Binary.QuotedPrintableTest where
@@ -22,6 +22,14 @@ case_enc_foobar = do
     BSC.pack "foobar" @=? QP.encode (BSC.pack "foobar")
     BSC.pack "foo=20bar" @=? QP.encode (BSC.pack "foo bar")
     BSC.pack "foo=09bar" @=? QP.encode (BSC.pack "foo\tbar")
+    BSC.pack "foo=0Dbar" @=? QP.encode (BSC.pack "foo\rbar")
+    BSC.pack "foo=0Abar" @=? QP.encode (BSC.pack "foo\nbar")
+
+case_enc_splitting :: IO ()
+case_enc_splitting = do
+  BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=\r\n=3D=3D=3D" @=? QP.encode (BSC.pack "===========================")
+  (BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=\r\n=3D=3D=3D", BSC.pack "") @=? QP.qp_enc (BSC.pack "===========================")
+  (BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D", BSC.pack "") @=? QP.qp_enc_sl (BSC.pack "===========================")
 
 case_dec_foobar :: IO ()
 case_dec_foobar = do
@@ -32,7 +40,7 @@ case_dec_foobar = do
     Right (BSC.pack "foo\tbar") @=? QP.decode (BSC.pack "foo\tbar")
     Right (BSC.pack "foo\tbar") @=? QP.decode (BSC.pack "foo=09bar")
     Right (BSC.pack "foo\r\nbar") @=? QP.decode (BSC.pack "foo\r\nbar")
-    Left (BSC.pack "foo", BSC.pack "=\r\nbar") @=? QP.decode (BSC.pack "foo=\r\nbar")
+    Right (BSC.pack "foobar") @=? QP.decode (BSC.pack "foo=\r\nbar")
     Left (BSC.pack "foo", BSC.pack "\nbar") @=? QP.decode (BSC.pack "foo\nbar")
     Left (BSC.pack "foo", BSC.pack "\rbar") @=? QP.decode (BSC.pack "foo\rbar")
 

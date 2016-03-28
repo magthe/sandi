@@ -1114,8 +1114,9 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
 // {{{1 quoted-printable
 
 static char const qp_encmap[] = "0123456789ABCDEF";
+#define QP_MAX_CHARS 71
 
-void qp_enc(uint8_t const *src, size_t srclen,
+void qp_enc(uint8_t split, uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
     uint8_t const **rem, size_t *remlen)
 {
@@ -1125,9 +1126,16 @@ void qp_enc(uint8_t const *src, size_t srclen,
     assert(rem);
     assert(remlen);
 
-    size_t od = *dstlen, i;
+    size_t od = *dstlen, i, l;
 
-    for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
+    for(i = 0, *dstlen = 0, l = 0; i < srclen && *dstlen < od; i++, (*dstlen)++, l++) {
+        if(split && (l >= QP_MAX_CHARS) && (*dstlen + 3 < od)) {
+            dst[*dstlen] = '=';
+            dst[*dstlen + 1] = 13;
+            dst[*dstlen + 2] = 10;
+            *dstlen += 3;
+            l = 0;
+        }
         if((33 <= src[i] && src[i] <= 60) ||
             (62 <= src[i] && src[i] <= 126)) {
             dst[*dstlen] = src[i];
@@ -1138,6 +1146,7 @@ void qp_enc(uint8_t const *src, size_t srclen,
             dst[*dstlen + 1] = qp_encmap[o0];
             dst[*dstlen + 2] = qp_encmap[o1];
             *dstlen += 2;
+            l += 2;
         }
     }
 
@@ -1185,10 +1194,15 @@ int qp_dec(uint8_t const *src, size_t srclen,
             dst[*dstlen] = src[i];
         } else if('=' == src[i]) {
             if(i + 2 >= srclen) { res = 0; goto exit; }
-            uint8_t o0 = qp_decmap[src[i + 1]], o1 = qp_decmap[src[i + 2]];
-            if((o0 | o1) & 0xf0) { res = 1; break; }
-            dst[*dstlen] = o0 << 4 | o1;
-            i += 2;
+            if(13 == src[i + 1] && 10 == src[i + 2]) {
+              i += 2;
+              (*dstlen)--;
+            } else {
+              uint8_t o0 = qp_decmap[src[i + 1]], o1 = qp_decmap[src[i + 2]];
+              if((o0 | o1) & 0xf0) { res = 1; break; }
+              dst[*dstlen] = o0 << 4 | o1;
+              i += 2;
+            }
         } else if(13 == src[i] && i + 1 < srclen && 10 == src[i + 1]) {
             dst[(*dstlen)++] = src[i++];
             dst[*dstlen] = src[i];

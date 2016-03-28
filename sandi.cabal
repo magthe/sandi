@@ -39,7 +39,6 @@ library
         Codec.Binary.Base64Url
         Codec.Binary.Base85
         Codec.Binary.QuotedPrintable
-        Codec.Binary.QuotedPrintable.Extras
         Codec.Binary.Uu
         Codec.Binary.Xx
         Codec.Binary.Yenc
