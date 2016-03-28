@@ -1114,6 +1114,7 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
 // {{{1 quoted-printable
 
 static char const qp_encmap[] = "0123456789ABCDEF";
+#define QP_MAX_CHARS 71
 
 void qp_enc(uint8_t const *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
@@ -1125,9 +1126,16 @@ void qp_enc(uint8_t const *src, size_t srclen,
     assert(rem);
     assert(remlen);
 
-    size_t od = *dstlen, i;
+    size_t od = *dstlen, i, l;
 
-    for(i = 0, *dstlen = 0; i < srclen && *dstlen < od; i++, (*dstlen)++) {
+    for(i = 0, *dstlen = 0, l = 0; i < srclen && *dstlen < od; i++, (*dstlen)++, l++) {
+        if((l >= QP_MAX_CHARS) && (*dstlen + 3 < od)) {
+            dst[*dstlen] = '=';
+            dst[*dstlen + 1] = 13;
+            dst[*dstlen + 2] = 10;
+            *dstlen += 3;
+            l = 0;
+        }
         if((33 <= src[i] && src[i] <= 60) ||
             (62 <= src[i] && src[i] <= 126)) {
             dst[*dstlen] = src[i];
@@ -1138,6 +1146,7 @@ void qp_enc(uint8_t const *src, size_t srclen,
             dst[*dstlen + 1] = qp_encmap[o0];
             dst[*dstlen + 2] = qp_encmap[o1];
             *dstlen += 2;
+            l += 2;
         }
     }
 
