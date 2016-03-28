@@ -18,10 +18,10 @@
 -- data into lines, and unchopping lines into encoded data is left as an
 -- exercise to the reader.  (Patches are welcome.)
 module Codec.Binary.Uu
-    ( uu_encode_part
-    , uu_encode_final
-    , uu_decode_part
-    , uu_decode_final
+    ( uuEncodePart
+    , uuEncodeFinal
+    , uuDecodePart
+    , uuDecodeFinal
     , encode
     , decode
     ) where
@@ -54,12 +54,12 @@ foreign import ccall "static uu.h uu_dec_final"
 -- allocated for the encoding to make sure that the remaining part is less than
 -- 3 bytes long, which means it can be passed to 'uu_encode_final' as is.
 --
--- >>> uu_encode_part $ Data.ByteString.Char8.pack "foo"
+-- >>> uuEncodePart $ Data.ByteString.Char8.pack "foo"
 -- ("9F]O","")
--- >>> uu_encode_part $ Data.ByteString.Char8.pack "foob"
+-- >>> uuEncodePart $ Data.ByteString.Char8.pack "foob"
 -- ("9F]O","b")
-uu_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-uu_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+uuEncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+uuEncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -78,15 +78,15 @@ uu_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
 --
 -- The final block has to have a size less than 3.
 --
--- >>> uu_encode_final $ Data.ByteString.Char8.pack "r"
+-- >>> uuEncodeFinal $ Data.ByteString.Char8.pack "r"
 -- Just "<@"
 --
 -- Trying to pass in too large a block result in failure:
 --
--- >>> uu_encode_final $ Data.ByteString.Char8.pack "foo"
+-- >>> uuEncodeFinal $ Data.ByteString.Char8.pack "foo"
 -- Nothing
-uu_encode_final :: BS.ByteString -> Maybe BS.ByteString
-uu_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+uuEncodeFinal :: BS.ByteString -> Maybe BS.ByteString
+uuEncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_uu_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -104,17 +104,17 @@ uu_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 -- allocated for the output to ensure that the remainder is less than 4 bytes
 -- in size.  Success result in a @Right@ value:
 --
--- >>> uu_decode_part $ Data.ByteString.Char8.pack "9F]O"
+-- >>> uuDecodePart $ Data.ByteString.Char8.pack "9F]O"
 -- Right ("foo","")
--- >>> uu_decode_part $ Data.ByteString.Char8.pack "9F]O8F$"
+-- >>> uuDecodePart $ Data.ByteString.Char8.pack "9F]O8F$"
 -- Right ("foo","8F$")
 --
 -- Failures occur on bad input and result in a @Left@ value:
 --
--- >>> uu_decode_part $ Data.ByteString.Char8.pack "9F 0"
+-- >>> uuDecodePart $ Data.ByteString.Char8.pack "9F 0"
 -- Left ("","9F 0")
-uu_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-uu_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+uuDecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+uuDecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -136,19 +136,19 @@ uu_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inL
 --
 -- The final block has to have a size of 0 or 4:
 --
--- >>> uu_decode_final $ Data.ByteString.Char8.pack "9F\\"
+-- >>> uuDecodeFinal $ Data.ByteString.Char8.pack "9F\\"
 -- Just "fo"
--- >>> uu_decode_final $ Data.ByteString.Char8.pack ""
+-- >>> uuDecodeFinal $ Data.ByteString.Char8.pack ""
 -- Just ""
--- >>> uu_decode_final $ Data.ByteString.Char8.pack "9F¬"
+-- >>> uuDecodeFinal $ Data.ByteString.Char8.pack "9F¬"
 -- Nothing
 --
 -- But it must be the encoding of a block that is less than 3 bytes:
 --
--- >>> uu_decode_final $ encode $ Data.ByteString.Char8.pack "foo"
+-- >>> uuDecodeFinal $ encode $ Data.ByteString.Char8.pack "foo"
 -- Nothing
-uu_decode_final :: BS.ByteString -> Maybe BS.ByteString
-uu_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+uuDecodeFinal :: BS.ByteString -> Maybe BS.ByteString
+uuDecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 3
     alloca $ \ pOutLen -> do
         r <- c_uu_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -170,8 +170,8 @@ uu_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
     where
-        (first, rest) = uu_encode_part bs
-        Just final = uu_encode_final rest
+        (first, rest) = uuEncodePart bs
+        Just final = uuEncodeFinal rest
 
 -- | Convenience function that combines 'uu_decode_part' and
 -- 'uu_decode_final' to decode a complete string.
@@ -192,5 +192,5 @@ decode bs = either
         maybe
             (Left (first, rest))
             (\ fin -> Right (first `BS.append` fin))
-            (uu_decode_final rest))
-    (uu_decode_part bs)
+            (uuDecodeFinal rest))
+    (uuDecodePart bs)

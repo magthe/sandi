@@ -12,7 +12,7 @@ import Data.ByteString (ByteString, empty)
 import Data.Conduit (Conduit)
 
 encode :: (Monad m) => Conduit ByteString m ByteString
-encode = U.encodeI Uu.uu_encode_part Uu.uu_encode_final empty
+encode = U.encodeI Uu.uuEncodePart Uu.uuEncodeFinal empty
 
 decode :: (Monad m, MonadThrow m) => Conduit ByteString m ByteString
-decode = U.decodeI Uu.uu_decode_part Uu.uu_decode_final empty
+decode = U.decodeI Uu.uuDecodePart Uu.uuDecodeFinal empty
