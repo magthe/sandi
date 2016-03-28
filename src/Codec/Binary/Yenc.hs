@@ -8,8 +8,8 @@
 -- Implementation based on the specification found at
 -- <http://yence.sourceforge.net/docs/protocol/version1_3_draft.html>.
 module Codec.Binary.Yenc
-    ( y_enc
-    , y_dec
+    ( yEncode
+    , yDecode
     , encode
     , decode
     ) where
@@ -37,12 +37,12 @@ foreign import ccall "static yenc.h y_dec"
 -- indata.  That means there is a risk that the encoded data won't fit and in
 -- that case the second part of the pair contains the remainder of the indata.
 --
--- >>> y_enc $ Data.ByteString.Char8.pack "foobar"
+-- >>> yEncode $ Data.ByteString.Char8.pack "foobar"
 -- ("\144\153\153\140\139\156","")
--- >>> snd $ y_enc $ Data.ByteString.Char8.pack $ Data.List.take 257 $ repeat '\x13'
+-- >>> snd $ yEncode $ Data.ByteString.Char8.pack $ Data.List.take 257 $ repeat '\x13'
 -- "\DC3"
-y_enc :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-y_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+yEncode :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+yEncode bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = max 512 (ceiling $ (toRational inLen) * 1.2)
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -60,18 +60,18 @@ y_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -
 
 -- | Decoding function.
 --
--- >>> y_dec $ Data.ByteString.pack [144,153,153,140,139,156]
+-- >>> yDecode $ Data.ByteString.pack [144,153,153,140,139,156]
 -- Right ("foobar","")
--- >>> y_dec $ Data.ByteString.Char8.pack "=}"
+-- >>> yDecode $ Data.ByteString.Char8.pack "=}"
 -- Right ("\DC3","")
 --
 -- A @Left@ value is only ever returned on decoding errors which, due to
 -- characteristics of the encoding, can never happen.
 --
--- >>> y_dec $ Data.ByteString.Char8.pack "="
+-- >>> yDecode $ Data.ByteString.Char8.pack "="
 -- Right ("","=")
-y_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-y_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+yDecode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+yDecode bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
@@ -91,11 +91,11 @@ y_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -
 -- | Convenient function that calls 'y_enc' repeatedly until the whole input
 -- data is encoded.
 encode :: BS.ByteString -> BS.ByteString
-encode = BS.concat . takeWhile (not . BS.null) . unfoldr (Just . y_enc)
+encode = BS.concat . takeWhile (not . BS.null) . unfoldr (Just . yEncode)
 
 -- | A synonym for 'y_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = case y_dec bs of
+decode bs = case yDecode bs of
     Right a@(d, r) -> if BS.null r
         then Right d
         else Left a
