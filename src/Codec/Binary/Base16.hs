@@ -8,8 +8,8 @@
 -- Implemention of base 16 encoding (hex encoding) as specified in RFC 4648
 -- (<http://tools.ietf.org/html/rfc4648>).
 module Codec.Binary.Base16
-    ( b16_enc
-    , b16_dec
+    ( b16Enc
+    , b16Dec
     , encode
     , decode
     ) where
@@ -35,14 +35,14 @@ foreign import ccall "static b16.h b16_dec"
 -- cannot fail.  Double the length of the input string is allocated for the
 -- encoded data, which is guaranteed to hold the result.
 --
--- >>> b16_enc $ Data.ByteString.pack [0x00]
+-- >>> b16Enc $ Data.ByteString.pack [0x00]
 -- "00"
 --
--- >>> b16_enc $ Data.ByteString.Char8.pack "foobar"
+-- >>> b16Enc $ Data.ByteString.Char8.pack "foobar"
 -- "666F6F626172"
-b16_enc :: BS.ByteString
+b16Enc :: BS.ByteString
     -> BS.ByteString -- ^ The encoded string
-b16_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b16Enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen * 2
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -62,18 +62,18 @@ b16_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen)
 -- the length of the input string is allocated, which is more than enough to
 -- hold the decoded data.
 --
--- >>> b16_dec $ Data.ByteString.Char8.pack "00"
+-- >>> b16Dec $ Data.ByteString.Char8.pack "00"
 -- Right ("\NUL","")
 --
--- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F626172"
+-- >>> b16Dec $ Data.ByteString.Char8.pack "666F6F626172"
 -- Right ("foobar","")
 --
--- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F62617"
+-- >>> b16Dec $ Data.ByteString.Char8.pack "666F6F62617"
 -- Right ("fooba","7")
--- >>> b16_dec $ Data.ByteString.Char8.pack "666F6F62617g"
+-- >>> b16Dec $ Data.ByteString.Char8.pack "666F6F62617g"
 -- Left ("fooba","g")
-b16_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b16_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b16Dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b16Dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
@@ -92,11 +92,11 @@ b16_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen)
 
 -- | A synonym for 'b16_enc'.
 encode :: BS.ByteString -> BS.ByteString
-encode = b16_enc
+encode = b16Enc
 
 -- | A synonum for 'b16_dec'.
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = case b16_dec bs of
+decode bs = case b16Dec bs of
     Right a@(d, r) -> if BS.null r
             then Right d
             else Left a
