@@ -59,10 +59,17 @@ foreign import ccall "static qp.h qp_dec"
 -- >>> qp_enc $ Data.ByteString.Char8.pack "\n\r\r\n\n\r"
 -- ("=0A=0D=0D=0A=0A=0D","")
 --
--- __Note__: This function will /not/ insert soft line breaks ('=' followed by
--- CRLF) to limit line length to 76 characters. This could be considered a /bug/.
-qp_enc, qp_enc_sl :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+-- Soft line breaks are inserted as needed
+--
+-- >>> qp_enc $ Data.ByteString.Char8.pack "========================="
+-- ("=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=\r\n=3D","")
+qp_enc :: BS.ByteString -> (BS.ByteString, BS.ByteString)
 qp_enc = qp_enc' 1
+
+-- | Single line encoding function.
+--
+-- Like 'qp_enc', but without inserting soft line breaks.
+qp_enc_sl :: BS.ByteString -> (BS.ByteString, BS.ByteString)
 qp_enc_sl = qp_enc' 0
 
 qp_enc' :: Word8 -> BS.ByteString -> (BS.ByteString, BS.ByteString)
@@ -128,12 +135,10 @@ qp_enc' split bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, 
 -- >>> qp_dec $ Data.ByteString.Char8.pack " \t"
 -- Right (" \t","")
 --
--- __Note__: The function doesn't deal with soft line breaks.
+-- The function deals properly with soft line breaks.
 --
 -- >>> qp_dec $ Data.ByteString.Char8.pack " =\r\n"
--- Left (" ","=\r\n")
---
--- This could be considered a /bug/.
+-- Right (" ","")
 qp_dec :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
 qp_dec bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes inLen
