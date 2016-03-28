@@ -12,10 +12,10 @@
 -- encoded data to make sure the size of the final block of encoded data is 8
 -- bytes too.
 module Codec.Binary.Base32
-    ( b32_encode_part
-    , b32_encode_final
-    , b32_decode_part
-    , b32_decode_final
+    ( b32EncodePart
+    , b32EncodeFinal
+    , b32DecodePart
+    , b32DecodeFinal
     , encode
     , decode
     ) where
@@ -48,12 +48,12 @@ foreign import ccall "static b32.h b32_dec_final"
 -- allocated for the encoding to make sure that the remaining part is less than
 -- 5 bytes long, which means it can be passed to 'b32_encode_final' as is.
 --
--- >>> b32_encode_part $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32EncodePart $ Data.ByteString.Char8.pack "fooba"
 -- ("MZXW6YTB","")
--- >>> b32_encode_part $ Data.ByteString.Char8.pack "foobar"
+-- >>> b32EncodePart $ Data.ByteString.Char8.pack "foobar"
 -- ("MZXW6YTB","r")
-b32_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b32_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32EncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b32EncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 5 * 8
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -72,15 +72,15 @@ b32_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 --
 -- The final block has to have a size less than 5.
 --
--- >>> b32_encode_final $ Data.ByteString.Char8.pack "r"
+-- >>> b32EncodeFinal $ Data.ByteString.Char8.pack "r"
 -- Just "OI======"
 --
 -- Trying to pass in too large a block result in failure:
 --
--- >>> b32_encode_final $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32EncodeFinal $ Data.ByteString.Char8.pack "fooba"
 -- Nothing
-b32_encode_final :: BS.ByteString -> Maybe BS.ByteString
-b32_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32EncodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b32EncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 8
     alloca $ \ pOutLen -> do
         r <- c_b32_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -98,17 +98,17 @@ b32_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- allocated for the output to ensure that the remainder is less than 8 bytes
 -- in size.  Success result in a @Right@ value:
 --
--- >>> b32_decode_part $ Data.ByteString.Char8.pack "MZXW6YTB"
+-- >>> b32DecodePart $ Data.ByteString.Char8.pack "MZXW6YTB"
 -- Right ("fooba","")
--- >>> b32_decode_part $ Data.ByteString.Char8.pack "MZXW6YTBOI======"
+-- >>> b32DecodePart $ Data.ByteString.Char8.pack "MZXW6YTBOI======"
 -- Right ("fooba","OI======")
 --
 -- Failures occur on bad input and result in a @Left@ value:
 --
--- >>> b32_decode_part $ Data.ByteString.Char8.pack "M=XW6YTB"
+-- >>> b32DecodePart $ Data.ByteString.Char8.pack "M=XW6YTB"
 -- Left ("","M=XW6YTB")
-b32_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b32_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32DecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b32DecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 8 * 5
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -130,19 +130,19 @@ b32_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 --
 -- The final block has to have a size of 0 or 8:
 --
--- >>> b32_decode_final $ Data.ByteString.Char8.pack "MZXW6YQ="
+-- >>> b32DecodeFinal $ Data.ByteString.Char8.pack "MZXW6YQ="
 -- Just "foob"
--- >>> b32_decode_final $ Data.ByteString.Char8.pack ""
+-- >>> b32DecodeFinal $ Data.ByteString.Char8.pack ""
 -- Just ""
--- >>> b32_decode_final $ Data.ByteString.Char8.pack "MZXW6Y="
+-- >>> b32DecodeFinal $ Data.ByteString.Char8.pack "MZXW6Y="
 -- Nothing
 --
 -- But it must be the encoding of a block that is less than 5 bytes:
 --
--- >>> b32_decode_final $ encode $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32DecodeFinal $ encode $ Data.ByteString.Char8.pack "fooba"
 -- Nothing
-b32_decode_final :: BS.ByteString -> Maybe BS.ByteString
-b32_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32DecodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b32DecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 5
     alloca $ \ pOutLen -> do
         r <- c_b32_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -164,8 +164,8 @@ b32_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
     where
-        (first, rest) = b32_encode_part bs
-        Just final = b32_encode_final rest
+        (first, rest) = b32EncodePart bs
+        Just final = b32EncodeFinal rest
 
 -- | Convenience function that combines 'b32_decode_part' and
 -- 'b32_decode_final' to decode a complete string.
@@ -186,5 +186,5 @@ decode bs = either
         maybe
             (Left (first, rest))
             (\ fin -> Right (first `BS.append` fin))
-            (b32_decode_final rest))
-    (b32_decode_part bs)
+            (b32DecodeFinal rest))
+    (b32DecodePart bs)
