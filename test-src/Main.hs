@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -XTemplateHaskell #-}
-
 -- Copyright: (c) Magnus Therning, 2012
 -- License: BSD3, found in the LICENSE file
 

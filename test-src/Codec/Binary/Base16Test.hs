@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XTemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 -- Copyright: (c) Magnus Therning, 2013
 -- License: BSD3, found in the LICENSE file
 
@@ -37,12 +37,12 @@ case_b16_dec_foobar = do
     Right (BSC.pack "foobar") @=? B16.decode (BSC.pack "666F6F626172")
 
 case_b16_dec_failure :: IO ()
-case_b16_dec_failure = do
+case_b16_dec_failure =
     -- odd number of input bytes
-    (Left (BSC.pack "fooba", BS.pack [55])) @=? (B16.decode $ BS.pack [54,54,54,70,54,70,54,50,54,49,55])
+    Left (BSC.pack "fooba", BS.pack [55]) @=? B16.decode (BS.pack [54,54,54,70,54,70,54,50,54,49,55])
 
 prop_b16_encdec :: [Word8] -> Bool
-prop_b16_encdec ws = (BS.pack ws) == (fromRight $ B16.decode $ B16.encode $ BS.pack ws)
+prop_b16_encdec ws = BS.pack ws == fromRight (B16.decode $ B16.encode $ BS.pack ws)
 
 tests :: TestTree
 tests = $(testGroupGenerator)

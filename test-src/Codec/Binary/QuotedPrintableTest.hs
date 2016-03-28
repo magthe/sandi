@@ -45,7 +45,7 @@ case_dec_foobar = do
     Left (BSC.pack "foo", BSC.pack "\rbar") @=? QP.decode (BSC.pack "foo\rbar")
 
 prop_encdec :: [Word8] -> Bool
-prop_encdec ws = (BS.pack ws) == (fromRight $ QP.decode $ QP.encode $ BS.pack ws)
+prop_encdec ws = BS.pack ws == fromRight (QP.decode $ QP.encode $ BS.pack ws)
 
 tests :: TestTree
 tests = $(testGroupGenerator)

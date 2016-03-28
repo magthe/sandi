@@ -1,8 +1,8 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 -- |
 -- Module: Data.Conduit.Codec.Util
 -- Copyright: (c) 2014 Magnus Therning
 -- License: BSD3
-{-# OPTIONS_GHC -XDeriveDataTypeable #-}
 
 module Data.Conduit.Codec.Util
     ( CodecDecodeException(..)
@@ -17,7 +17,7 @@ import Control.Exception (Exception)
 import Data.ByteString as BS (ByteString, append, null)
 import Data.Conduit (Conduit, await, yield)
 import Data.Maybe (fromJust)
-import Control.Monad (unless)
+import Control.Monad (unless, void)
 import Control.Monad.Catch (MonadThrow, throwM)
 
 type EncFunc = ByteString -> ByteString
@@ -35,7 +35,7 @@ encodeI :: (Monad m) => EncFuncPart -> EncFuncFinal -> ByteString -> Conduit Byt
 encodeI enc_part enc_final i = do
     clear <- await
     case clear of
-        Nothing -> (yield $ fromJust $ enc_final i) >> return ()
+        Nothing -> void (yield $ fromJust $ enc_final i)
         Just s -> let
                 (a, b) = enc_part (i `append` s)
             in do
@@ -46,10 +46,10 @@ decodeI :: (Monad m, MonadThrow m) => DecFunc -> DecFuncFinal -> ByteString -> C
 decodeI dec_part dec_final i = do
     enc <- await
     case enc of
-        Nothing -> 
+        Nothing ->
             case dec_final i of
                 Nothing -> throwM (CodecDecodeException i)
-                Just s -> yield s >> return ()
+                Just s -> void (yield s)
         Just s ->
             case dec_part (i `append` s) of
                 Left (a, b) -> do
@@ -72,10 +72,8 @@ decodeII :: (Monad m, MonadThrow m) => DecFunc -> ByteString -> Conduit ByteStri
 decodeII dec i = do
     enc <- await
     case enc of
-        Nothing -> if BS.null i
-            then return ()
-            else throwM $ CodecDecodeException i
-        Just s -> case (dec $ i `append` s) of
+        Nothing -> unless (BS.null i) (throwM $ CodecDecodeException i)
+        Just s -> case dec $ i `append` s of
             Left (c, b) -> do
                 unless (BS.null c) $ yield c
                 throwM $ CodecDecodeException b

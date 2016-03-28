@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XTemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 -- Copyright: (c) Magnus Therning, 2013
 -- License: BSD3, found in the LICENSE file
 
@@ -27,7 +27,7 @@ case_enc_foobar = do
     BSC.pack "Zm9vYmFy" @=? B64.encode (BSC.pack "foobar")
 
 case_enc_specials :: IO ()
-case_enc_specials = do
+case_enc_specials =
     -- /++/
     BSC.pack "/++/" @=? B64.encode (BS.pack [255,239,191])
 
@@ -42,12 +42,12 @@ case_dec_foobar = do
     Right (BSC.pack "foobar") @=? B64.decode (BSC.pack "Zm9vYmFy")
 
 case_dec_specials :: IO ()
-case_dec_specials = do
+case_dec_specials =
     -- /++/
     Right (BS.pack [255,239,191]) @=? B64.decode (BSC.pack "/++/")
 
 prop_encdec :: [Word8] -> Bool
-prop_encdec ws = (BS.pack ws) == (fromRight $ B64.decode $ B64.encode $ BS.pack ws)
+prop_encdec ws = BS.pack ws == fromRight (B64.decode $ B64.encode $ BS.pack ws)
 
 tests :: TestTree
 tests = $(testGroupGenerator)

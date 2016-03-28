@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -XTemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 -- Copyright: (c) Magnus Therning, 2013
 -- License: BSD3, found in the LICENSE file
 
@@ -37,7 +37,7 @@ case_dec_foobar = do
     Right (BSC.pack "foobar") @=? Uu.decode (BSC.pack "9F]O8F%R")
 
 prop_encdec :: [Word8] -> Bool
-prop_encdec ws = (BS.pack ws) == (fromRight $ Uu.decode $ Uu.encode $ BS.pack ws)
+prop_encdec ws = BS.pack ws == fromRight (Uu.decode $ Uu.encode $ BS.pack ws)
 
 tests :: TestTree
 tests = $(testGroupGenerator)

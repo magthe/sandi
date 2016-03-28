@@ -51,8 +51,7 @@ b16Enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) 
                 poke pOutLen (castEnum maxOutLen)
                 c_b16_enc (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
-                outBs <- BSU.unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
-                return outBs
+                BSU.unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
 
 -- | Decoding function.
 --
