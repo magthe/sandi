@@ -7,10 +7,10 @@
 --
 -- Implemented as described at <http://en.wikipedia.org/wiki/Ascii85>.
 module Codec.Binary.Base85
-   ( b85_encode_part
-   , b85_encode_final
-   , b85_decode_part
-   , b85_decode_final
+   ( b85EncodePart
+   , b85EncodeFinal
+   , b85DecodePart
+   , b85DecodeFinal
    , encode
    , decode
    ) where
@@ -40,17 +40,17 @@ foreign import ccall "static b85.h b85_dec_final"
 --
 -- Encodes as large a part as possible of the indata.
 --
--- >>> b85_encode_part $ Data.ByteString.Char8.pack "foobar"
+-- >>> b85EncodePart $ Data.ByteString.Char8.pack "foobar"
 -- ("AoDTs","ar")
 --
 -- It supports special handling of both all-zero groups and all-space groups.
 --
--- >>> b85_encode_part $ Data.ByteString.Char8.pack "    "
+-- >>> b85EncodePart $ Data.ByteString.Char8.pack "    "
 -- ("y", "")
--- >>> b85_encode_part $ Data.ByteString.Char8.pack "\0\0\0\0"
+-- >>> b85EncodePart $ Data.ByteString.Char8.pack "\0\0\0\0"
 -- ("z", "")
-b85_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b85_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b85EncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b85EncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 5
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -68,10 +68,10 @@ b85_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 
 -- | Encoding function for the final block.
 --
--- >>> b85_encode_final $ Data.ByteString.Char8.pack "ar"
+-- >>> b85EncodeFinal $ Data.ByteString.Char8.pack "ar"
 -- Just "@<)"
-b85_encode_final :: BS.ByteString -> Maybe BS.ByteString
-b85_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b85EncodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b85EncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 5
     alloca $ \ pOutLen -> do
         r <- c_b85_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -87,11 +87,11 @@ b85_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 --
 -- Decode as large a portion of the input as possible.
 --
--- >>> b85_decode_part $ Data.ByteString.Char8.pack "AoDTs"
+-- >>> b85DecodePart $ Data.ByteString.Char8.pack "AoDTs"
 -- Right ("foob","")
--- >>> b85_decode_part $ Data.ByteString.Char8.pack "AoDTs@<)"
+-- >>> b85DecodePart $ Data.ByteString.Char8.pack "AoDTs@<)"
 -- Right ("foob","@<)")
--- >>> b85_decode_part $ Data.ByteString.Char8.pack "@<)"
+-- >>> b85DecodePart $ Data.ByteString.Char8.pack "@<)"
 -- Right ("","@<)")
 --
 -- At least 512 bytes of data is allocated for the output, but because of the
@@ -100,10 +100,10 @@ b85_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- to allocate 5 times the length of the input.  It seemed a good trade-off to
 -- sometimes have to call the function more than once instead.)
 --
--- >>> either snd snd $ b85_decode_part $ Data.ByteString.Char8.pack $ Prelude.take 129 $ repeat 'y'
+-- >>> either snd snd $ b85DecodePart $ Data.ByteString.Char8.pack $ Prelude.take 129 $ repeat 'y'
 -- "y"
-b85_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b85_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b85DecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b85DecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = max 512 $ inLen `div` 5 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -123,14 +123,14 @@ b85_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 
 -- | Decoding function for the final block.
 --
--- >>> b85_decode_final $ Data.ByteString.Char8.pack "@<)"
+-- >>> b85DecodeFinal $ Data.ByteString.Char8.pack "@<)"
 -- Just "ar"
--- >>> b85_decode_final $ Data.ByteString.Char8.pack ""
+-- >>> b85DecodeFinal $ Data.ByteString.Char8.pack ""
 -- Just ""
--- >>> b85_decode_final $ Data.ByteString.Char8.pack "AoDTs"
+-- >>> b85DecodeFinal $ Data.ByteString.Char8.pack "AoDTs"
 -- Nothing
-b85_decode_final :: BS.ByteString -> Maybe BS.ByteString
-b85_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b85DecodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b85DecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_b85_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -152,8 +152,8 @@ b85_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
     where
-        (first, rest) = b85_encode_part bs
-        Just final = b85_encode_final rest
+        (first, rest) = b85EncodePart bs
+        Just final = b85EncodeFinal rest
 
 -- | Convenience function that combines 'b85_decode_part' and
 -- 'b85_decode_final' to decode a complete string.
@@ -165,7 +165,7 @@ encode bs = first `BS.append` final
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
 decode bs = either Left handleFinal (iterateDecode [] bs)
     where
-        iterateDecode bss re = case b85_decode_part re of
+        iterateDecode bss re = case b85DecodePart re of
             Right (d, r) ->
                 if BS.null d
                     then Right (BS.concat (reverse bss), r)
@@ -175,5 +175,5 @@ decode bs = either Left handleFinal (iterateDecode [] bs)
         handleFinal a@(first, rest) = maybe
             (Left a)
             (\ final -> Right (first `BS.append` final))
-            (b85_decode_final rest)
+            (b85DecodeFinal rest)
 
