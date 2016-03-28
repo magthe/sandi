@@ -9,6 +9,7 @@
 -- (<http://tools.ietf.org/html/rfc2045>).
 module Codec.Binary.QuotedPrintable
     ( qp_enc
+    , qp_enc_sl
     , qp_dec
     , encode
     , decode
@@ -25,7 +26,7 @@ castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
 foreign import ccall "static qp.h qp_enc"
-    c_qp_enc :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
+    c_qp_enc :: Word8 -> Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
 foreign import ccall "static qp.h qp_dec"
     c_qp_dec :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
@@ -60,15 +61,19 @@ foreign import ccall "static qp.h qp_dec"
 --
 -- __Note__: This function will /not/ insert soft line breaks ('=' followed by
 -- CRLF) to limit line length to 76 characters. This could be considered a /bug/.
-qp_enc :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-qp_enc bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+qp_enc, qp_enc_sl :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+qp_enc = qp_enc' 1
+qp_enc_sl = qp_enc' 0
+
+qp_enc' :: Word8 -> BS.ByteString -> (BS.ByteString, BS.ByteString)
+qp_enc' split bs = U.unsafePerformIO $ BSU.unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutBuf = max 512 (2 * inLen)
     outBuf <- mallocBytes maxOutBuf
     alloca $ \ pOutLen ->
         alloca $ \ pRemBuf ->
             alloca $ \ pRemLen -> do
                 poke pOutLen (castEnum maxOutBuf)
-                c_qp_enc (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
+                c_qp_enc split (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
                 newOutBuf <- reallocBytes outBuf (castEnum outLen)
                 remBuf <- peek pRemBuf

@@ -26,8 +26,10 @@ case_enc_foobar = do
     BSC.pack "foo=0Abar" @=? QP.encode (BSC.pack "foo\nbar")
 
 case_enc_splitting :: IO ()
-case_enc_splitting =
+case_enc_splitting = do
   BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=\r\n=3D=3D=3D" @=? QP.encode (BSC.pack "===========================")
+  (BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=\r\n=3D=3D=3D", BSC.pack "") @=? QP.qp_enc (BSC.pack "===========================")
+  (BSC.pack "=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D", BSC.pack "") @=? QP.qp_enc_sl (BSC.pack "===========================")
 
 case_dec_foobar :: IO ()
 case_dec_foobar = do
