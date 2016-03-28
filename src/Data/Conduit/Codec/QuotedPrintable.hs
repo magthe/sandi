@@ -15,4 +15,4 @@ encode :: (Monad m) => Conduit ByteString m ByteString
 encode = U.encodeII Qp.encode
 
 decode :: (Monad m, MonadThrow m) => Conduit ByteString m ByteString
-decode = U.decodeII Qp.qp_dec empty
+decode = U.decodeII Qp.qpDecode empty
