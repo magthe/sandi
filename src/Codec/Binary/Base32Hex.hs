@@ -10,10 +10,10 @@
 -- This encoding is closely related to base 32 and so is its implementation, so
 -- please refer to "Codec.Binary.Base32" for further details.
 module Codec.Binary.Base32Hex
-   ( b32h_encode_part
-   , b32h_encode_final
-   , b32h_decode_part
-   , b32h_decode_final
+   ( b32hEncodePart
+   , b32hEncodeFinal
+   , b32hDecodePart
+   , b32hDecodeFinal
    , encode
    , decode
    ) where
@@ -43,12 +43,12 @@ foreign import ccall "static b32.h b32h_dec_final"
 --
 -- See 'Codec.Binary.Base32.b32_encode_part'.
 --
--- >>> b32h_encode_part $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32hEncodePart $ Data.ByteString.Char8.pack "fooba"
 -- ("CPNMUOJ1","")
--- >>> b32h_encode_part $ Data.ByteString.Char8.pack "foobar"
+-- >>> b32hEncodePart $ Data.ByteString.Char8.pack "foobar"
 -- ("CPNMUOJ1","r")
-b32h_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32hEncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b32hEncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 5 * 8
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -67,12 +67,12 @@ b32h_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 --
 -- See 'Codec.Binary.Base32.b32_encode_final'.
 --
--- >>> b32h_encode_final $ Data.ByteString.Char8.pack "r"
+-- >>> b32hEncodeFinal $ Data.ByteString.Char8.pack "r"
 -- Just "E8======"
--- >>> b32h_encode_final $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32hEncodeFinal $ Data.ByteString.Char8.pack "fooba"
 -- Nothing
-b32h_encode_final :: BS.ByteString -> Maybe BS.ByteString
-b32h_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32hEncodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b32hEncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 8
     alloca $ \ pOutLen -> do
         r <- c_b32h_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -88,14 +88,14 @@ b32h_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, 
 --
 -- See 'Codec.Binary.Base32.b32_decode_part'.
 --
--- >>> b32h_decode_part $ Data.ByteString.Char8.pack "CPNMUOJ1"
+-- >>> b32hDecodePart $ Data.ByteString.Char8.pack "CPNMUOJ1"
 -- Right ("fooba","")
--- >>> b32h_decode_part $ Data.ByteString.Char8.pack "CPNMUOJ1E8======"
+-- >>> b32hDecodePart $ Data.ByteString.Char8.pack "CPNMUOJ1E8======"
 -- Right ("fooba","E8======")
--- >>> b32h_decode_part $ Data.ByteString.Char8.pack "C=NMUOJ1"
+-- >>> b32hDecodePart $ Data.ByteString.Char8.pack "C=NMUOJ1"
 -- Left ("","C=NMUOJ1")
-b32h_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b32h_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32hDecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b32hDecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 8 * 5
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -117,16 +117,16 @@ b32h_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 --
 -- See 'Codec.Binary.Base32.b32_decode_final'.
 --
--- >>> b32h_decode_final $ Data.ByteString.Char8.pack "CPNMUOG="
+-- >>> b32hDecodeFinal $ Data.ByteString.Char8.pack "CPNMUOG="
 -- Just "foob"
--- >>> b32h_decode_final $ Data.ByteString.Char8.pack ""
+-- >>> b32hDecodeFinal $ Data.ByteString.Char8.pack ""
 -- Just ""
--- >>> b32h_decode_final $ Data.ByteString.Char8.pack "CPNMUO="
+-- >>> b32hDecodeFinal $ Data.ByteString.Char8.pack "CPNMUO="
 -- Nothing
--- >>> b32h_decode_final $ encode $ Data.ByteString.Char8.pack "fooba"
+-- >>> b32hDecodeFinal $ encode $ Data.ByteString.Char8.pack "fooba"
 -- Nothing
-b32h_decode_final :: BS.ByteString -> Maybe BS.ByteString
-b32h_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b32hDecodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b32hDecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 5
     alloca $ \ pOutLen -> do
         r <- c_b32h_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -148,8 +148,8 @@ b32h_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, 
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
     where
-        (first, rest) = b32h_encode_part bs
-        Just final = b32h_encode_final rest
+        (first, rest) = b32hEncodePart bs
+        Just final = b32hEncodeFinal rest
 
 -- | Convenience function that combines 'b32h_decode_part' and
 -- 'b32h_decode_final' to decode a complete string.
@@ -170,5 +170,5 @@ decode bs = either
         maybe
             (Left (first, rest))
             (\ fin -> Right (first `BS.append` fin))
-            (b32h_decode_final rest))
-    (b32h_decode_part bs)
+            (b32hDecodeFinal rest))
+    (b32hDecodePart bs)

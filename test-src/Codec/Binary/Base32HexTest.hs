@@ -39,11 +39,11 @@ case_dec_foobar = do
 case_dec_failures :: IO ()
 case_dec_failures = do
     --  illegal char
-    Left (BS.empty, BSC.pack "C=NMUOJ1") @=? (B32H.b32h_decode_part $ BSC.pack "C=NMUOJ1")
+    Left (BS.empty, BSC.pack "C=NMUOJ1") @=? (B32H.b32hDecodePart $ BSC.pack "C=NMUOJ1")
     -- full block
-    Nothing @=? (B32H.b32h_decode_final $ BSC.pack "CPNMUOJ1")
+    Nothing @=? (B32H.b32hDecodeFinal $ BSC.pack "CPNMUOJ1")
     -- too short
-    Nothing @=? (B32H.b32h_decode_final $ BSC.pack "CPNMUO=")
+    Nothing @=? (B32H.b32hDecodeFinal $ BSC.pack "CPNMUO=")
 
 prop_encdec :: [Word8] -> Bool
 prop_encdec ws = (BS.pack ws) == (fromRight $ B32H.decode $ B32H.encode $ BS.pack ws)
