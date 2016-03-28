@@ -12,10 +12,10 @@
 -- encoded data to make sure the size of the final block of encoded data is 4
 -- bytes too.
 module Codec.Binary.Base64
-    ( b64_encode_part
-    , b64_encode_final
-    , b64_decode_part
-    , b64_decode_final
+    ( b64EncodePart
+    , b64EncodeFinal
+    , b64DecodePart
+    , b64DecodeFinal
     , encode
     , decode
     ) where
@@ -48,12 +48,12 @@ foreign import ccall "static b64.h b64_dec_final"
 -- allocated for the encoding to make sure that the remaining part is less than
 -- 3 bytes long, which means it can be passed to 'b64_encode_final' as is.
 --
--- >>> b64_encode_part $ Data.ByteString.Char8.pack "foo"
+-- >>> b64EncodePart $ Data.ByteString.Char8.pack "foo"
 -- ("Zm9v","")
--- >>> b64_encode_part $ Data.ByteString.Char8.pack "foob"
+-- >>> b64EncodePart $ Data.ByteString.Char8.pack "foob"
 -- ("Zm9v","b")
-b64_encode_part :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-b64_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64EncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
+b64EncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -72,15 +72,15 @@ b64_encode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 --
 -- The final block has to have a size less than 3.
 --
--- >>> b64_encode_final $ Data.ByteString.Char8.pack "r"
+-- >>> b64EncodeFinal $ Data.ByteString.Char8.pack "r"
 -- Just "cg=="
 --
 -- Trying to pass in too large a block result in failure:
 --
--- >>> b64_encode_final $ Data.ByteString.Char8.pack "foo"
+-- >>> b64EncodeFinal $ Data.ByteString.Char8.pack "foo"
 -- Nothing
-b64_encode_final :: BS.ByteString -> Maybe BS.ByteString
-b64_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64EncodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b64EncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 4
     alloca $ \ pOutLen -> do
         r <- c_b64_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -98,17 +98,17 @@ b64_encode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 -- allocated for the output to ensure that the remainder is less than 4 bytes
 -- in size.  Success result in a @Right@ value:
 --
--- >>> b64_decode_part $ Data.ByteString.Char8.pack "Zm9v"
+-- >>> b64DecodePart $ Data.ByteString.Char8.pack "Zm9v"
 -- Right ("foo","")
--- >>> b64_decode_part $ Data.ByteString.Char8.pack "Zm9vYmE="
+-- >>> b64DecodePart $ Data.ByteString.Char8.pack "Zm9vYmE="
 -- Right ("foo","YmE=")
 --
 -- Failures occur on bad input and result in a @Left@ value:
 --
--- >>> b64_decode_part $ Data.ByteString.Char8.pack "Z=9v"
+-- >>> b64DecodePart $ Data.ByteString.Char8.pack "Z=9v"
 -- Left ("","Z=9v")
-b64_decode_part :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-b64_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64DecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
+b64DecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
     outBuf <- mallocBytes maxOutLen
     alloca $ \ pOutLen ->
@@ -130,19 +130,19 @@ b64_decode_part bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, in
 --
 -- The final block has to have a size of 0 or 4:
 --
--- >>> b64_decode_final $ Data.ByteString.Char8.pack "Zm8="
+-- >>> b64DecodeFinal $ Data.ByteString.Char8.pack "Zm8="
 -- Just "fo"
--- >>> b64_decode_final $ Data.ByteString.Char8.pack ""
+-- >>> b64DecodeFinal $ Data.ByteString.Char8.pack ""
 -- Just ""
--- >>> b64_decode_final $ Data.ByteString.Char8.pack "Zm="
+-- >>> b64DecodeFinal $ Data.ByteString.Char8.pack "Zm="
 -- Nothing
 --
 -- But it must be the encoding of a block that is less than 3 bytes:
 --
--- >>> b64_decode_final $ encode $ Data.ByteString.Char8.pack "foo"
+-- >>> b64DecodeFinal $ encode $ Data.ByteString.Char8.pack "foo"
 -- Nothing
-b64_decode_final :: BS.ByteString -> Maybe BS.ByteString
-b64_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+b64DecodeFinal :: BS.ByteString -> Maybe BS.ByteString
+b64DecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
     outBuf <- mallocBytes 3
     alloca $ \ pOutLen -> do
         r <- c_b64_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
@@ -164,8 +164,8 @@ b64_decode_final bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, i
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
     where
-        (first, rest) = b64_encode_part bs
-        Just final = b64_encode_final rest
+        (first, rest) = b64EncodePart bs
+        Just final = b64EncodeFinal rest
 
 -- | Convenience function that combines 'b64_decode_part' and
 -- 'b64_decode_final' to decode a complete string.
@@ -186,5 +186,5 @@ decode bs = either
         maybe
             (Left (first, rest))
             (\ fin -> Right (first `BS.append` fin))
-            (b64_decode_final rest))
-    (b64_decode_part bs)
+            (b64DecodeFinal rest))
+    (b64DecodePart bs)
