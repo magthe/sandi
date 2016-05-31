@@ -8,7 +8,7 @@ author: Magnus Therning
 maintainer: magnus@therning.org
 homepage: http://hackage.haskell.org/package/sandi
 copyright: Magnus Therning, 2012
-category: Codec Conduit
+category: Codec, Conduit
 synopsis: Data encoding library
 description: Reasonably fast data encoding library.
 extra-source-files: csrc/*.h
