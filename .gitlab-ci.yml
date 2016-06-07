@@ -1,0 +1,8 @@
+image: fpco/stack-build:latest
+stages:
+  - build
+
+build-latest:
+  stage: build
+  script:
+    - stack --install-ghc build --test
