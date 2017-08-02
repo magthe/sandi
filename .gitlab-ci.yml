@@ -7,6 +7,11 @@ build-latest:
   script:
     - stack --install-ghc build --test
 
+build-8.0:
+  stage: build
+  script:
+    - stack --stack-yaml stack-8.0.yaml --install-ghc build --test
+
 build-7.10:
   stage: build
   script:
