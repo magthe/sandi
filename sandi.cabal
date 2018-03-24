@@ -46,7 +46,7 @@ library
     if flag(with-conduit)
         build-depends:
             conduit >=1.2 && < 1.4,
-            exceptions >=0.6 && < 0.9
+            exceptions >=0.6 && < 0.11
         exposed-modules:
             Data.Conduit.Codec.Base16
             Data.Conduit.Codec.Base32
