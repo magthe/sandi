@@ -34,7 +34,7 @@ library:
   when:
     - condition: flag(with-conduit)
       dependencies:
-        - conduit <1.4
+        - conduit
         - exceptions
       exposed-modules:
         - Data.Conduit.Codec.Base16
