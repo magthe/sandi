@@ -1,5 +1,5 @@
 name: sandi
-version: 0.4.2
+version: 0.4.3
 synopsis: Data encoding library
 description: >-
   Reasonably fast data encoding library.
