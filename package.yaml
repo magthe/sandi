@@ -30,7 +30,6 @@ library:
   dependencies:
     - base <5
     - bytestring
-    - stringsearch
   when:
     - condition: flag(with-conduit)
       dependencies:
