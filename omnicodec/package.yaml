@@ -1,5 +1,5 @@
 name: omnicodec
-version: 0.7
+version: 0.8
 synopsis: Data encoding and decoding command line utilities
 description: >-
   Two simple command line tools built on sandi
@@ -12,7 +12,7 @@ category: Codec
 git: https://github.com/magthe/omnicodec.git
 
 dependencies:
-    - base
+    - base <5
     - cmdargs
     - conduit
     - bytestring
