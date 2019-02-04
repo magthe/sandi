@@ -1,0 +1,33 @@
+name: omnicodec
+version: 0.7
+synopsis: Data encoding and decoding command line utilities
+description: >-
+  Two simple command line tools built on sandi
+  (http://hackage.haskell.org/package/sandi).
+maintainer: Magnus Therning <magnus@therning.org>
+license: OtherLicense
+license-file: COPYING
+category: Codec
+
+git: https://github.com/magthe/omnicodec.git
+
+dependencies:
+    - base
+    - cmdargs
+    - conduit
+    - bytestring
+    - sandi
+    - transformers
+
+executables:
+  odec:
+    main: odec.hs
+    source-dirs:
+      - src
+    ghc-options: -Wall
+
+  oenc:
+    main: oenc.hs
+    source-dirs:
+      - src
+    ghc-options: -Wall
