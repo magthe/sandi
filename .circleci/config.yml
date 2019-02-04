@@ -1,0 +1,27 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: fpco/stack-build:lts-12
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v2-omnicodec-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
+      - run:
+          name: Setup GHC and build dependencies
+          command: |
+            stack setup
+            stack install --dependencies-only --test --no-run-tests
+      - run:
+          name: Run tests
+          command: |
+            stack test
+      - save_cache:
+          paths:
+            - ~/.stack
+          key: v2-omnicodec-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
