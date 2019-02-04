@@ -5,11 +5,13 @@ description: >-
   Two simple command line tools built on sandi
   (http://hackage.haskell.org/package/sandi).
 maintainer: Magnus Therning <magnus@therning.org>
-license: OtherLicense
+license: Apache-2.0
 license-file: COPYING
 category: Codec
+extra-source-files:
+  - package.yaml
 
-git: https://github.com/magthe/omnicodec.git
+git: https://github.com/magthe/sandi.git
 
 dependencies:
     - base <5
