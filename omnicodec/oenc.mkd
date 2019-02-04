@@ -1,0 +1,47 @@
+% OENC,ODEC(1)
+
+# NAME
+
+oenc - encode data
+
+odec - decode data
+
+# SYNOPSIS
+
+**oenc** [-c CODEC|--codec=CODEC] [-i FILE|--in=FILE] [-o FILE|--out=FILE]
+
+**odec** [-c CODEC|--codec=CODEC] [-i FILE|--in=FILE] [-o FILE|--out=FILE]
+
+# DESCRIPTION
+
+**oenc** is used to encode binary files into formats that can be transmitted over
+mediums that have limited support for 8-bit data.  An example is SMTP which
+can only safely transmit data where the 8th bit is 0.
+
+**odec** is used to decode encoded files back to their original format.
+
+# OPTIONS
+
+-c CODEC  --codec=CODEC
+
+> Choose a codec.  The list of supported codecs is available through the built-in help.
+
+-i FILE  --in=FILE
+
+> Read data from a file instead of 'stdin'.
+
+-o FILE  --out=FILE
+
+> Write to a file instead of 'stdout'.
+
+--help
+
+> Show the built-in help.
+
+# SEE ALSO
+
+uuencode(1), compress(1), mail(1), uucp(1), uuencode(5)
+
+# AUTHOR
+
+Written by Magnus Therning <magnus@therning.org>

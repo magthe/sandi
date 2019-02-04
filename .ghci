@@ -1,1 +1,1 @@
-:set -isrc:test-src:bench-src
+:set -isrc:test-src:bench-src:dist/build/autogen
