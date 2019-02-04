@@ -11,7 +11,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v2-sandi-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
+            - v2-sandi-{{ checksum "sandi/package.yaml" }}-{{ checksum "omnicodec/package.yaml" }}-{{ checksum "stack.yaml" }}
       - run:
           name: Setup GHC and build dependencies
           command: |
@@ -24,4 +24,4 @@ jobs:
       - save_cache:
           paths:
             - ~/.stack
-          key: v2-sandi-{{ checksum "package.yaml" }}-{{ checksum "stack.yaml" }}
+          key: v2-sandi-{{ checksum "sandi/package.yaml" }}-{{ checksum "omnicodec/package.yaml" }}-{{ checksum "stack.yaml" }}
