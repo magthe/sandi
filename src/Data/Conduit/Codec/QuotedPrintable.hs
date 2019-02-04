@@ -9,10 +9,10 @@ import qualified Data.Conduit.Codec.Util as U
 
 import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)
-import Data.Conduit (Conduit)
+import Data.Conduit (ConduitT)
 
-encode :: (Monad m) => Conduit ByteString m ByteString
+encode :: (Monad m) => ConduitT ByteString ByteString m ()
 encode = U.encodeII Qp.encode
 
-decode :: (Monad m, MonadThrow m) => Conduit ByteString m ByteString
+decode :: (Monad m, MonadThrow m) => ConduitT ByteString ByteString m ()
 decode = U.decodeII Qp.qpDecode empty
