@@ -31,7 +31,7 @@ import System.Console.CmdArgs
 -- import System.Exit
 import System.IO as SIO
 import Data.Conduit
-import Data.Conduit.Binary
+import Data.Conduit.Combinators (sinkHandle, sourceHandle)
 
 import qualified Data.Conduit.Codec.Base64 as B64
 import qualified Data.Conduit.Codec.Base64Url as B64U
@@ -51,7 +51,7 @@ ver = "omnicode decode (odec) " ++ (showVersion version)
 data Codec = B64 | B64U | B32 | B32H | B16 | B85 | QP | Uu | Xx
     deriving(Show, Eq, Data, Typeable)
 
-codecMap :: [(Codec, Conduit ByteString (ResourceT IO) ByteString)]
+codecMap :: [(Codec, ConduitT ByteString ByteString IO ())]
 codecMap =
     [ (B64, B64.decode)
     , (B64U, B64U.decode)
@@ -93,21 +93,20 @@ myArgs = MyArgs
 main :: IO ()
 main = do
     cmdArgs myArgs >>= \ a -> do
-    let decFunc = lookup (argCodec a) codecMap
-    withMaybeFile (argInput a) ReadMode $ \ inputFile ->
+      let decFunc = lookup (argCodec a) codecMap
+      withMaybeFile (argInput a) ReadMode $ \ inputFile ->
         withMaybeFile (argOutput a) WriteMode $ \ outputFile ->
-            runResourceT $ decodeFile (fromJust decFunc) inputFile outputFile
+        runConduit $ decodeFile (fromJust decFunc) inputFile outputFile
 
 withMaybeFile :: Maybe FilePath -> IOMode -> (Handle -> IO r) -> IO r
 withMaybeFile fn mode func = let
         dH = if mode == ReadMode
             then stdin
             else stdout
-    in bracket 
+    in bracket
         (maybe (return dH) (flip openFile mode) fn)
         hClose
         func
 
--- decodeFile :: (BS.ByteString -> Either a BS.ByteString) -> Handle -> Handle -> IO ()
-decodeFile :: (MonadIO m) => Conduit ByteString m ByteString -> Handle -> Handle -> m ()
-decodeFile decFunc inF outF = sourceHandle inF $= decFunc $$ sinkHandle outF
+decodeFile :: MonadIO m => ConduitM ByteString ByteString m () -> Handle -> Handle -> ConduitM a c m ()
+decodeFile decFunc inF outF = sourceHandle inF .| decFunc .| sinkHandle outF
