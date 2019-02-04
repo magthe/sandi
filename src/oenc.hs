@@ -22,28 +22,27 @@ module Main where
 import Paths_omnicodec (version)
 
 import Control.Exception
+import Control.Monad.IO.Class
 import Data.ByteString as BS
+import Data.Conduit
+import Data.Conduit.Combinators (sinkHandle, sourceHandle)
 import Data.Maybe
 import Data.Version(showVersion)
 import System.Console.CmdArgs
 import System.IO
-import Data.Conduit
-import Data.Conduit.Combinators (sinkHandle, sourceHandle)
-import Control.Monad.IO.Class
 
-import qualified Data.Conduit.Codec.Base64 as B64
-import qualified Data.Conduit.Codec.Base64Url as B64U
+import qualified Data.Conduit.Codec.Base16 as B16
 import qualified Data.Conduit.Codec.Base32 as B32
 import qualified Data.Conduit.Codec.Base32Hex as B32H
-import qualified Data.Conduit.Codec.Base16 as B16
+import qualified Data.Conduit.Codec.Base64 as B64
+import qualified Data.Conduit.Codec.Base64Url as B64U
 import qualified Data.Conduit.Codec.Base85 as B85
 import qualified Data.Conduit.Codec.QuotedPrintable as QP
 import qualified Data.Conduit.Codec.Uu as Uu
 import qualified Data.Conduit.Codec.Xx as Xx
 
--- {{{1 command line options
 ver :: String
-ver = "omnicode encode (oenc) " ++ (showVersion version)
+ver = "omnicode encode (oenc) " ++ showVersion version
     ++ "\nCopyright 2012 Magnus Therning <magnus@therning.org>"
 
 data Codec = B64 | B64U | B32 | B32H | B16 | B85 | QP | Uu | Xx
@@ -85,9 +84,8 @@ myArgs = MyArgs
         -- , " url  - url encoding"
         ]
 
--- {{{1 main
 main :: IO ()
-main = do
+main =
     cmdArgs myArgs >>= \ a -> do
       let encFunc = lookup (argCodec a) codecMap
       withMaybeFile (argInput a) ReadMode $ \ inputFile ->
@@ -100,7 +98,7 @@ withMaybeFile fn mode func = let
             then stdin
             else stdout
     in bracket
-        (maybe (return dH) (flip openFile mode) fn)
+        (maybe (return dH) (`openFile` mode) fn)
         hClose
         func
 
