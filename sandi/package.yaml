@@ -8,7 +8,6 @@ license: BSD3
 category: Codec, Conduit
 extra-source-files:
   - package.yaml
-  - stack.yaml
   - csrc/*.h
 
 git: https://github.com/magthe/sandi.git
