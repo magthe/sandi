@@ -55,6 +55,7 @@ tests:
     main: Main.hs
     dependencies:
       - sandi
+      - QuickCheck
       - base
       - bytestring
       - tasty
