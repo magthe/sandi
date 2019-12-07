@@ -1,1 +1,4 @@
 *.cabal
+*.local
+
+/result*
