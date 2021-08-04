@@ -1,0 +1,47 @@
+cabal-version: 2.2
+
+name:           omnicodec
+version:        0.8
+synopsis:       Data encoding and decoding command line utilities
+description:    Two simple command line tools built on sandi (http://hackage.haskell.org/package/sandi).
+category:       Codec
+maintainer:     Magnus Therning <magnus@therning.org>
+license:        Apache-2.0
+license-file:   COPYING
+build-type:     Simple
+extra-source-files:
+    package.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/magthe/sandi.git
+
+executable odec
+  main-is: odec.hs
+  hs-source-dirs: src
+  other-modules:
+      Paths_omnicodec
+  default-language: Haskell2010
+  build-depends:
+      base
+    , bytestring
+    , cmdargs
+    , conduit
+    , sandi
+    , transformers
+  ghc-options: -Wall
+
+executable oenc
+  main-is: oenc.hs
+  hs-source-dirs: src
+  other-modules:
+      Paths_omnicodec
+  default-language: Haskell2010
+  build-depends:
+      base <5
+    , bytestring
+    , cmdargs
+    , conduit
+    , sandi
+    , transformers
+  ghc-options: -Wall
