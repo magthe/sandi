@@ -1,1 +1,5 @@
 *.local
+
+/result*
+/.cabal/
+/.direnv/

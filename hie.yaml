@@ -1,0 +1,8 @@
+cradle:
+  cabal:
+    - path: "./sandi/src"
+      component: "lib:sandi"
+    - path: "./omnicodec/src/odec.hs"
+      component: "exe:odec"
+    - path: "./omnicodec/src/oenc.hs"
+      component: "exe:oenc"

@@ -3,25 +3,26 @@ version: 2
 jobs:
   build:
     docker:
-      - image: fpco/stack-build:lts-13
+      - image: nixorg/nix:circleci
+        environment:
+          NIXPKGS_ALLOW_UNFREE: 1
 
     working_directory: ~/repo
 
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v2-sandi-{{ checksum "sandi/package.yaml" }}-{{ checksum "omnicodec/package.yaml" }}-{{ checksum "stack.yaml" }}
       - run:
-          name: Setup GHC and build dependencies
+          name: Set up Nix
           command: |
-            stack setup
-            stack install --dependencies-only --test --no-run-tests
+            nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+            nix-channel --update
+            nix-channel --list
       - run:
-          name: Run tests
+          name: Build sandi
           command: |
-            stack test
-      - save_cache:
-          paths:
-            - ~/.stack
-          key: v2-sandi-{{ checksum "sandi/package.yaml" }}-{{ checksum "omnicodec/package.yaml" }}-{{ checksum "stack.yaml" }}
+            nix-build --attr sandi
+
+      - run:
+          name: Build omnicodec
+          command: |
+            nix-build --attr omnicodec
