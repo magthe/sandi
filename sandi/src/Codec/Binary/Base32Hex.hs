@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CApiFFI #-}
 
 -- |
 -- Module    : Codec.Binary.Base32Hex
@@ -27,16 +27,16 @@ import System.IO.Unsafe as U
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static b32.h b32h_enc_part"
+foreign import capi "codec.h b32h_enc_part"
     c_b32h_enc_part :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static b32.h b32h_enc_final"
+foreign import capi "codec.h b32h_enc_final"
     c_b32h_enc_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
-foreign import ccall "static b32.h b32h_dec_part"
+foreign import capi "codec.h b32h_dec_part"
     c_b32h_dec_part :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
 
-foreign import ccall "static b32.h b32h_dec_final"
+foreign import capi "codec.h b32h_dec_final"
     c_b32h_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
 -- | Encoding function.

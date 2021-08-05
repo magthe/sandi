@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CApiFFI #-}
 
 -- |
 -- Module: Codec.Binary.Base64
@@ -29,16 +29,16 @@ import System.IO.Unsafe as U
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static b64.h b64_enc_part"
+foreign import capi "codec.h b64_enc_part"
     c_b64_enc_part :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static b64.h b64_enc_final"
+foreign import capi "codec.h b64_enc_final"
     c_b64_enc_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
-foreign import ccall "static b64.h b64_dec_part"
+foreign import capi "codec.h b64_dec_part"
     c_b64_dec_part :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
 
-foreign import ccall "static b64.h b64_dec_final"
+foreign import capi "codec.h b64_dec_final"
     c_b64_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
 -- | Encoding function.

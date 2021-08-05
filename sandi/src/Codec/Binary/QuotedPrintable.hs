@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CApiFFI #-}
 
 -- |
 -- Module: Codec.Binary.QuotedPrintable
@@ -25,10 +25,10 @@ import qualified Data.ByteString.Unsafe as BSU
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static qp.h qp_enc"
+foreign import capi "codec.h qp_enc"
     c_qp_enc :: Word8 -> Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static qp.h qp_dec"
+foreign import capi "codec.h qp_dec"
     c_qp_dec :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
 
 -- | Encoding function.

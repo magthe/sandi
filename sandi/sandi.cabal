@@ -43,6 +43,8 @@ library
   cc-options: -fPIC -Wall -Wextra
   c-sources:
       csrc/codec.c
+  include-dirs:
+      csrc
   if flag(with-conduit)
     exposed-modules:
         Data.Conduit.Codec.Base16

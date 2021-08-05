@@ -9,9 +9,9 @@
 // {{{1 base16
 static char const b16_encmap[] = "0123456789ABCDEF";
 
-void b16_enc(uint8_t const *src, size_t srclen,
+void b16_enc(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     size_t od = *dstlen, i;
 
@@ -50,9 +50,9 @@ static uint8_t const b16_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
 };
 
-int b16_dec(uint8_t const *src, size_t srclen,
+int b16_dec(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     size_t od = *dstlen, i;
     int res = 0;
@@ -80,9 +80,9 @@ int b16_dec(uint8_t const *src, size_t srclen,
 
 static char const b32_encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
-void b32_enc_part(uint8_t const *src, size_t srclen,
+void b32_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -116,7 +116,7 @@ void b32_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int b32_enc_final(uint8_t const *src, size_t srclen,
+int b32_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -220,9 +220,9 @@ static uint8_t const b32_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 
-int b32_dec_part(uint8_t const *src, size_t srclen,
+int b32_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     size_t od = *dstlen, i;
     int res = 0;
@@ -267,7 +267,7 @@ int b32_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int b32_dec_final(uint8_t const *src, size_t srclen,
+int b32_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     uint8_t o0, o1, o2, o3, o4, o5, o6, o7;
@@ -321,9 +321,9 @@ int b32_dec_final(uint8_t const *src, size_t srclen,
 
 static char const b32h_encmap[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
-void b32h_enc_part(uint8_t const *src, size_t srclen,
+void b32h_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     size_t od = *dstlen, i;
 
@@ -357,7 +357,7 @@ void b32h_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int b32h_enc_final(uint8_t const *src, size_t srclen,
+int b32h_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -461,9 +461,9 @@ static uint8_t const b32h_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 
-int b32h_dec_part(uint8_t const *src, size_t srclen,
+int b32h_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     size_t od = *dstlen, i;
     int res = 0;
@@ -508,7 +508,7 @@ int b32h_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int b32h_dec_final(uint8_t const *src, size_t srclen,
+int b32h_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     uint8_t o0, o1, o2, o3, o4, o5, o6, o7;
@@ -562,9 +562,9 @@ int b32h_dec_final(uint8_t const *src, size_t srclen,
 
 static char const b64_encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-void b64_enc_part(uint8_t const *src, size_t srclen,
+void b64_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -590,7 +590,7 @@ void b64_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int b64_enc_final(uint8_t const *src, size_t srclen,
+int b64_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -650,9 +650,9 @@ static uint8_t const b64_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 
 
-int b64_dec_part(uint8_t const *src, size_t srclen,
+int b64_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -689,7 +689,7 @@ int b64_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int b64_dec_final(uint8_t const *src, size_t srclen,
+int b64_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -723,9 +723,9 @@ int b64_dec_final(uint8_t const *src, size_t srclen,
 
 static char const b64u_encmap[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-void b64u_enc_part(uint8_t const *src, size_t srclen,
+void b64u_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -751,7 +751,7 @@ void b64u_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int b64u_enc_final(uint8_t const *src, size_t srclen,
+int b64u_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -811,9 +811,9 @@ static uint8_t const b64u_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 
 
-int b64u_dec_part(uint8_t const *src, size_t srclen,
+int b64u_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -850,7 +850,7 @@ int b64u_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int b64u_dec_final(uint8_t const *src, size_t srclen,
+int b64u_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -885,9 +885,9 @@ int b64u_dec_final(uint8_t const *src, size_t srclen,
 uint8_t b85_zeroes[] = { 0, 0, 0, 0 };
 uint8_t b85_spaces[] = { 0x20, 0x20, 0x20, 0x20 };
 
-void b85_enc_part(uint8_t const *src, size_t srclen,
+void b85_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src ||  0 == srclen);
     assert(dst);
@@ -920,7 +920,7 @@ exit:
     *remlen = srclen - i;
 }
 
-int b85_enc_final(uint8_t const *src, size_t srclen,
+int b85_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src ||  0 == srclen);
@@ -986,9 +986,9 @@ static uint8_t const b85_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
 };
 
-int b85_dec_part(uint8_t const *src, size_t srclen,
+int b85_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src ||  0 == srclen);
     assert(dst);
@@ -1037,7 +1037,7 @@ exit:
     return(res);
 }
 
-int b85_dec_final(uint8_t const *src, size_t srclen,
+int b85_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src ||  0 == srclen);
@@ -1116,9 +1116,9 @@ int b85_dec_final(uint8_t const *src, size_t srclen,
 static char const qp_encmap[] = "0123456789ABCDEF";
 #define QP_MAX_CHARS 71
 
-void qp_enc(uint8_t split, uint8_t const *src, size_t srclen,
+void qp_enc(uint8_t split, uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || srclen == 0);
     assert(dst);
@@ -1174,9 +1174,9 @@ static uint8_t const qp_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
 };
 
-int qp_dec(uint8_t const *src, size_t srclen,
+int qp_dec(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || srclen == 0);
     assert(dst);
@@ -1220,9 +1220,9 @@ exit:
 
 static char const uu_encmap[] = "`!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
 
-void uu_enc_part(uint8_t const *src, size_t srclen,
+void uu_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -1248,7 +1248,7 @@ void uu_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int uu_enc_final(uint8_t const *src, size_t srclen,
+int uu_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -1304,9 +1304,9 @@ static uint8_t const uu_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 };
 
-int uu_dec_part(uint8_t const *src, size_t srclen,
+int uu_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -1339,7 +1339,7 @@ int uu_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int uu_dec_final(uint8_t const *src, size_t srclen,
+int uu_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -1382,9 +1382,9 @@ error:
 
 static char const xx_encmap[] = "+-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-void xx_enc_part(uint8_t const *src, size_t srclen,
+void xx_enc_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -1410,7 +1410,7 @@ void xx_enc_part(uint8_t const *src, size_t srclen,
     *remlen = srclen - i;
 }
 
-int xx_enc_final(uint8_t const *src, size_t srclen,
+int xx_enc_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -1467,9 +1467,9 @@ static uint8_t const xx_decmap[] = {
     0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
 };
 
-int xx_dec_part(uint8_t const *src, size_t srclen,
+int xx_dec_part(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -1502,7 +1502,7 @@ int xx_dec_part(uint8_t const *src, size_t srclen,
     return(res);
 }
 
-int xx_dec_final(uint8_t const *src, size_t srclen,
+int xx_dec_final(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen)
 {
     assert(src || 0 == srclen);
@@ -1543,9 +1543,9 @@ error:
 
 // {{{1 yenc
 
-void y_enc(uint8_t const *src, size_t srclen,
+void y_enc(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);
@@ -1576,9 +1576,9 @@ exit:
     *remlen = srclen - i;
 }
 
-int y_dec(uint8_t const *src, size_t srclen,
+int y_dec(uint8_t *src, size_t srclen,
     uint8_t *dst, size_t *dstlen,
-    uint8_t const **rem, size_t *remlen)
+    uint8_t **rem, size_t *remlen)
 {
     assert(src || 0 == srclen);
     assert(dst);

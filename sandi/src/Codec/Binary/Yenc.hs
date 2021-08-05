@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CApiFFI #-}
 
 -- |
 -- Module: Codec.Binary.Yenc
@@ -24,10 +24,10 @@ import Data.List
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static yenc.h y_enc"
+foreign import capi "codec.h y_enc"
     c_y_enc :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static yenc.h y_dec"
+foreign import capi "codec.h y_dec"
     c_y_dec :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
 
 -- | Encoding function.

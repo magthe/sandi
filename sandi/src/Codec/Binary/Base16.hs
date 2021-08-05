@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE CApiFFI #-}
 
 -- |
 -- Module: Codec.Binary.Base16
@@ -23,10 +23,10 @@ import qualified Data.ByteString.Unsafe as BSU
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
 
-foreign import ccall "static b16.h b16_enc"
+foreign import capi "codec.h b16_enc"
     c_b16_enc :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO ()
 
-foreign import ccall "static b16.h b16_dec"
+foreign import capi "codec.h b16_dec"
     c_b16_dec :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> Ptr (Ptr Word8) -> Ptr CSize -> IO CInt
 
 -- | Encoding function.
