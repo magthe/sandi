@@ -1,0 +1,11 @@
+name: "Run tests"
+on: push
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v22
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: NIX_BUILD_SHELL=y nix develop --impure -c cabal test all
