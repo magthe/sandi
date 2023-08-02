@@ -1,13 +1,16 @@
 module Codec.Binary.YencBench where
 
-import Criterion.Main (bench, nf)
+import Criterion.Main (Benchmark, bench, nf)
+import Data.ByteString (ByteString)
 
 import Codec.Binary.Yenc
 
-mkBenchs data1M data10M = let
+mkBenchs :: ByteString -> ByteString -> [Benchmark]
+mkBenchs data1M data10M =
+    let
         enc1M = encode data1M
         enc10M = encode data10M
-    in
+     in
         [ bench "enc yenc 1M" $ nf encode data1M
         , bench "dec yenc 1M" $ nf decode enc1M
         , bench "enc yenc 10M" $ nf encode data10M

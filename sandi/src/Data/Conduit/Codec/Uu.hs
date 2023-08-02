@@ -1,11 +1,14 @@
--- |
--- Module: Data.Conduit.Codec.Uu
--- Copyright: (c) 2014 Magnus Therning
--- License: BSD3
+{-# LANGUAGE ImportQualifiedPost #-}
+
+{- |
+Module: Data.Conduit.Codec.Uu
+Copyright: (c) 2014 Magnus Therning
+License: BSD3
+-}
 module Data.Conduit.Codec.Uu where
 
-import qualified Codec.Binary.Uu as Uu
-import qualified Data.Conduit.Codec.Util as U
+import Codec.Binary.Uu qualified as Uu
+import Data.Conduit.Codec.Util qualified as U
 
 import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)

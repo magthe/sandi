@@ -27,7 +27,7 @@ import Data.ByteString as BS
 import Data.Conduit
 import Data.Conduit.Combinators (sinkHandle, sourceHandle)
 import Data.Maybe
-import Data.Version(showVersion)
+import Data.Version (showVersion)
 import System.Console.CmdArgs
 import System.IO
 
@@ -42,11 +42,13 @@ import qualified Data.Conduit.Codec.Uu as Uu
 import qualified Data.Conduit.Codec.Xx as Xx
 
 ver :: String
-ver = "omnicode encode (oenc) " ++ showVersion version
-    ++ "\nCopyright 2012 Magnus Therning <magnus@therning.org>"
+ver =
+    "omnicode encode (oenc) "
+        ++ showVersion version
+        ++ "\nCopyright 2012 Magnus Therning <magnus@therning.org>"
 
 data Codec = B64 | B64U | B32 | B32H | B16 | B85 | QP | Uu | Xx
-    deriving(Show, Eq, Data, Typeable)
+    deriving (Show, Eq, Data, Typeable)
 
 codecMap :: [(Codec, ConduitT ByteString ByteString IO ())]
 codecMap =
@@ -61,46 +63,52 @@ codecMap =
     , (Xx, Xx.encode)
     ]
 
-data MyArgs = MyArgs { argInput :: Maybe FilePath, argOutput :: Maybe FilePath, argCodec :: Codec }
-    deriving(Show, Data, Typeable)
+data MyArgs = MyArgs {argInput :: Maybe FilePath, argOutput :: Maybe FilePath, argCodec :: Codec}
+    deriving (Show, Data, Typeable)
 
 myArgs :: MyArgs
-myArgs = MyArgs
-    { argInput = Nothing &= name "i" &= name "in" &= explicit &= typFile &= help "read data from file"
-    , argOutput = Nothing &= name "o" &= name "out" &= explicit &= typFile &= help "write encoded data to file"
-    , argCodec = B64 &= name "c" &= name "codec" &= explicit &= typ "CODEC" &= help "codec b64, b64u, b32, b32h, b16, b85, qp, uu, xx (b64)"
-    } &= summary ver &= details
-        [ "Encoder tool for multiple encodings:"
-        , " b64  - base64 (default)"
-        , " b64u - base64url"
-        , " b32  - base32"
-        , " b32h - base32hex"
-        , " b16  - base16"
-        , " b85  - base85"
-        , " qp   - quoted printable"
-        , " uu   - uu encoding"
-        , " xx   - xx encoding"
-        -- , " ps   - python string escaping"
-        -- , " url  - url encoding"
-        ]
+myArgs =
+    MyArgs
+        { argInput = Nothing &= name "i" &= name "in" &= explicit &= typFile &= help "read data from file"
+        , argOutput = Nothing &= name "o" &= name "out" &= explicit &= typFile &= help "write encoded data to file"
+        , argCodec = B64 &= name "c" &= name "codec" &= explicit &= typ "CODEC" &= help "codec b64, b64u, b32, b32h, b16, b85, qp, uu, xx (b64)"
+        }
+        &= summary ver
+        &= details
+            [ "Encoder tool for multiple encodings:"
+            , " b64  - base64 (default)"
+            , " b64u - base64url"
+            , " b32  - base32"
+            , " b32h - base32hex"
+            , " b16  - base16"
+            , " b85  - base85"
+            , " qp   - quoted printable"
+            , " uu   - uu encoding"
+            , " xx   - xx encoding"
+            -- , " ps   - python string escaping"
+            -- , " url  - url encoding"
+            ]
 
 main :: IO ()
 main =
-    cmdArgs myArgs >>= \ a -> do
-      let encFunc = lookup (argCodec a) codecMap
-      withMaybeFile (argInput a) ReadMode $ \ inputFile ->
-        withMaybeFile (argOutput a) WriteMode $ \ outputFile ->
-        runConduit $ encodeFile (fromJust encFunc) inputFile outputFile
+    cmdArgs myArgs >>= \a -> do
+        let encFunc = lookup (argCodec a) codecMap
+        withMaybeFile (argInput a) ReadMode $ \inputFile ->
+            withMaybeFile (argOutput a) WriteMode $ \outputFile ->
+                runConduit $ encodeFile (fromJust encFunc) inputFile outputFile
 
 withMaybeFile :: Maybe FilePath -> IOMode -> (Handle -> IO r) -> IO r
-withMaybeFile fn mode func = let
-        dH = if mode == ReadMode
-            then stdin
-            else stdout
-    in bracket
-        (maybe (return dH) (`openFile` mode) fn)
-        hClose
-        func
+withMaybeFile fn mode func =
+    let
+        dH =
+            if mode == ReadMode
+                then stdin
+                else stdout
+     in
+        bracket
+            (maybe (return dH) (`openFile` mode) fn)
+            hClose
+            func
 
 encodeFile :: MonadIO m => ConduitM ByteString ByteString m () -> Handle -> Handle -> ConduitM a c m ()
 encodeFile encFunc inF outF = sourceHandle inF .| encFunc .| sinkHandle outF

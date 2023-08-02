@@ -1,24 +1,25 @@
 {-# LANGUAGE DeriveDataTypeable #-}
--- |
--- Module: Data.Conduit.Codec.Util
--- Copyright: (c) 2014 Magnus Therning
--- License: BSD3
 
-module Data.Conduit.Codec.Util
-    ( CodecDecodeException(..)
-    , encodeI
-    , decodeI
-    , decodeII
-    , encodeII
-    ) where
+{- |
+Module: Data.Conduit.Codec.Util
+Copyright: (c) 2014 Magnus Therning
+License: BSD3
+-}
+module Data.Conduit.Codec.Util (
+    CodecDecodeException (..),
+    encodeI,
+    decodeI,
+    decodeII,
+    encodeII,
+) where
 
-import Data.Typeable (Typeable)
 import Control.Exception (Exception)
+import Control.Monad (unless, void)
+import Control.Monad.Catch (MonadThrow, throwM)
 import Data.ByteString as BS (ByteString, append, null)
 import Data.Conduit (ConduitT, await, yield)
 import Data.Maybe (fromJust)
-import Control.Monad (unless, void)
-import Control.Monad.Catch (MonadThrow, throwM)
+import Data.Typeable (Typeable)
 
 type EncFunc = ByteString -> ByteString
 type EncFuncPart = ByteString -> (ByteString, ByteString)
@@ -26,7 +27,7 @@ type EncFuncFinal = ByteString -> Maybe ByteString
 type DecFunc = ByteString -> Either (ByteString, ByteString) (ByteString, ByteString)
 type DecFuncFinal = ByteString -> Maybe ByteString
 
-data CodecDecodeException = CodecDecodeException ByteString
+newtype CodecDecodeException = CodecDecodeException ByteString
     deriving (Typeable, Show)
 
 instance Exception CodecDecodeException
@@ -36,11 +37,13 @@ encodeI enc_part enc_final i = do
     clear <- await
     case clear of
         Nothing -> void (yield $ fromJust $ enc_final i)
-        Just s -> let
+        Just s ->
+            let
                 (a, b) = enc_part (i `append` s)
-            in do
-                unless (BS.null a) $ yield a
-                encodeI enc_part enc_final b
+             in
+                do
+                    unless (BS.null a) $ yield a
+                    encodeI enc_part enc_final b
 
 decodeI :: (Monad m, MonadThrow m) => DecFunc -> DecFuncFinal -> ByteString -> ConduitT ByteString ByteString m ()
 decodeI dec_part dec_final i = do

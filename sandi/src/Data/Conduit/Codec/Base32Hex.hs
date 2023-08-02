@@ -1,11 +1,14 @@
--- |
--- Module: Data.Conduit.Codec.Base32Hex
--- Copyright: (c) 2014 Magnus Therning
--- License: BSD3
+{-# LANGUAGE ImportQualifiedPost #-}
+
+{- |
+Module: Data.Conduit.Codec.Base32Hex
+Copyright: (c) 2014 Magnus Therning
+License: BSD3
+-}
 module Data.Conduit.Codec.Base32Hex where
 
-import qualified Codec.Binary.Base32Hex as B32H
-import qualified Data.Conduit.Codec.Util as U
+import Codec.Binary.Base32Hex qualified as B32H
+import Data.Conduit.Codec.Util qualified as U
 
 import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString, empty)

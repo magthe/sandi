@@ -77,13 +77,11 @@ test-suite sandi-tests
     Codec.Binary.UuTest
     Codec.Binary.XxTest
     Codec.Binary.YencTest
-    Codec.TestUtils
     Paths_sandi
 
   build-depends:
     , base
     , bytestring
-    , QuickCheck
     , sandi
     , tasty
     , tasty-hunit

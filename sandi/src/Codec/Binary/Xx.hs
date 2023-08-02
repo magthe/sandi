@@ -1,32 +1,35 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 
--- |
--- Module: Codec.Binary.Xx
--- Copyright: (c) 2012 Magnus Therning
--- License: BSD3
---
--- Xxencoding is obsolete but still included for completeness.  Further
--- information on the encoding can be found at
--- <http://en.wikipedia.org/wiki/Xxencode>.  It should be noted that this
--- implementation performs no padding.
---
--- This encoding is very similar to uuencoding, therefore further information
--- regarding the functions can be found in the documentation of
--- "Codec.Binary.Uu".
-module Codec.Binary.Xx
-    ( xxEncodePart
-    , xxEncodeFinal
-    , xxDecodePart
-    , xxDecodeFinal
-    , encode
-    , decode
-    ) where
+{- |
+Module: Codec.Binary.Xx
+Copyright: (c) 2012 Magnus Therning
+License: BSD3
 
+Xxencoding is obsolete but still included for completeness.  Further
+information on the encoding can be found at
+<http://en.wikipedia.org/wiki/Xxencode>.  It should be noted that this
+implementation performs no padding.
+
+This encoding is very similar to uuencoding, therefore further information
+regarding the functions can be found in the documentation of
+"Codec.Binary.Uu".
+-}
+module Codec.Binary.Xx (
+    xxEncodePart,
+    xxEncodeFinal,
+    xxDecodePart,
+    xxDecodeFinal,
+    encode,
+    decode,
+) where
+
+import Data.ByteString qualified as BS
 import Data.ByteString.Unsafe
+import Data.Maybe (fromJust)
 import Foreign
 import Foreign.C.Types
 import System.IO.Unsafe as U
-import qualified Data.ByteString as BS
 
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum
@@ -43,19 +46,20 @@ foreign import ccall "static uu.h xx_dec_part"
 foreign import ccall "static uu.h xx_dec_final"
     c_xx_dec_final :: Ptr Word8 -> CSize -> Ptr Word8 -> Ptr CSize -> IO CInt
 
--- | Encoding function.
---
--- >>> xxEncodePart $ Data.ByteString.Char8.pack "foo"
--- ("Naxj","")
--- >>> xxEncodePart $ Data.ByteString.Char8.pack "foob"
--- ("Naxj","b")
+{- | Encoding function.
+
+>>> xxEncodePart $ Data.ByteString.Char8.pack "foo"
+("Naxj","")
+>>> xxEncodePart $ Data.ByteString.Char8.pack "foob"
+("Naxj","b")
+-}
 xxEncodePart :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-xxEncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+xxEncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \(inBuf, inLen) -> do
     let maxOutLen = inLen `div` 3 * 4
     outBuf <- mallocBytes maxOutLen
-    alloca $ \ pOutLen ->
-        alloca $ \ pRemBuf ->
-            alloca $ \ pRemLen -> do
+    alloca $ \pOutLen ->
+        alloca $ \pRemBuf ->
+            alloca $ \pRemLen -> do
                 poke pOutLen (castEnum maxOutLen)
                 c_xx_enc_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
@@ -65,16 +69,17 @@ xxEncodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen
                 outBs <- unsafePackCStringFinalizer outBuf (castEnum outLen) (free outBuf)
                 return (outBs, remBs)
 
--- | Encoding function for the final block.
---
--- >>> xxEncodeFinal $ Data.ByteString.Char8.pack "r"
--- Just "QU"
--- >>> xxEncodeFinal $ Data.ByteString.Char8.pack "foo"
--- Nothing
+{- | Encoding function for the final block.
+
+>>> xxEncodeFinal $ Data.ByteString.Char8.pack "r"
+Just "QU"
+>>> xxEncodeFinal $ Data.ByteString.Char8.pack "foo"
+Nothing
+-}
 xxEncodeFinal :: BS.ByteString -> Maybe BS.ByteString
-xxEncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+xxEncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \(inBuf, inLen) -> do
     outBuf <- mallocBytes 4
-    alloca $ \ pOutLen -> do
+    alloca $ \pOutLen -> do
         r <- c_xx_enc_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
         if r == 0
             then do
@@ -84,22 +89,23 @@ xxEncodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLe
                 return $ Just outBs
             else free outBuf >> return Nothing
 
--- | Decoding function.
---
--- >>> xxDecodePart $ Data.ByteString.Char8.pack "Naxj"
--- Right ("foo","")
--- >>> xxDecodePart $ Data.ByteString.Char8.pack "NaxjMa3"
--- Right ("foo","Ma3")
---
--- >>> xxDecodePart $ Data.ByteString.Char8.pack "Na j"
--- Left ("","Na J")
+{- | Decoding function.
+
+>>> xxDecodePart $ Data.ByteString.Char8.pack "Naxj"
+Right ("foo","")
+>>> xxDecodePart $ Data.ByteString.Char8.pack "NaxjMa3"
+Right ("foo","Ma3")
+
+>>> xxDecodePart $ Data.ByteString.Char8.pack "Na j"
+Left ("","Na J")
+-}
 xxDecodePart :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) (BS.ByteString, BS.ByteString)
-xxDecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+xxDecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \(inBuf, inLen) -> do
     let maxOutLen = inLen `div` 4 * 3
     outBuf <- mallocBytes maxOutLen
-    alloca $ \ pOutLen ->
-        alloca $ \ pRemBuf ->
-            alloca $ \ pRemLen -> do
+    alloca $ \pOutLen ->
+        alloca $ \pRemBuf ->
+            alloca $ \pRemLen -> do
                 poke pOutLen (castEnum maxOutLen)
                 r <- c_xx_dec_part (castPtr inBuf) (castEnum inLen) outBuf pOutLen pRemBuf pRemLen
                 outLen <- peek pOutLen
@@ -112,21 +118,22 @@ xxDecodePart bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen
                     then return $ Right (outBs, remBs)
                     else return $ Left (outBs, remBs)
 
--- | Decoding function for the final block.
---
--- >>> xxDecodeFinal $ Data.ByteString.Char8.pack "Naw"
--- Just "fo"
--- >>> xxDecodeFinal $ Data.ByteString.Char8.pack ""
--- Just ""
--- >>> xxDecodeFinal $ Data.ByteString.Char8.pack "Na "
--- Nothing
---
--- >>> xxDecodeFinal $ encode $ Data.ByteString.Char8.pack "foo"
--- Nothing
+{- | Decoding function for the final block.
+
+>>> xxDecodeFinal $ Data.ByteString.Char8.pack "Naw"
+Just "fo"
+>>> xxDecodeFinal $ Data.ByteString.Char8.pack ""
+Just ""
+>>> xxDecodeFinal $ Data.ByteString.Char8.pack "Na "
+Nothing
+
+>>> xxDecodeFinal $ encode $ Data.ByteString.Char8.pack "foo"
+Nothing
+-}
 xxDecodeFinal :: BS.ByteString -> Maybe BS.ByteString
-xxDecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLen) -> do
+xxDecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \(inBuf, inLen) -> do
     outBuf <- mallocBytes 3
-    alloca $ \ pOutLen -> do
+    alloca $ \pOutLen -> do
         r <- c_xx_dec_final (castPtr inBuf) (castEnum inLen) outBuf pOutLen
         if r == 0
             then do
@@ -138,16 +145,16 @@ xxDecodeFinal bs = U.unsafePerformIO $ unsafeUseAsCStringLen bs $ \ (inBuf, inLe
 
 encode :: BS.ByteString -> BS.ByteString
 encode bs = first `BS.append` final
-    where
-        (first, rest) = xxEncodePart bs
-        Just final = xxEncodeFinal rest
+  where
+    (first, rest) = xxEncodePart bs
+    final = fromJust $ xxEncodeFinal rest
 
 decode :: BS.ByteString -> Either (BS.ByteString, BS.ByteString) BS.ByteString
-decode bs = either
-    Left
-    (\ (first, rest) ->
-        maybe
-            (Left (first, rest))
-            (\ fin -> Right (first `BS.append` fin))
-            (xxDecodeFinal rest))
-    (xxDecodePart bs)
+decode bs =
+    xxDecodePart bs
+        >>= ( \(first, rest) ->
+                maybe
+                    (Left (first, rest))
+                    (\fin -> Right (first `BS.append` fin))
+                    (xxDecodeFinal rest)
+            )
