@@ -1,8 +1,55 @@
 cradle:
   cabal:
-    - path: "./sandi/src"
+    - path: "omnicodec/src/odec.hs"
+      component: "omnicodec:exe:odec"
+
+    - path: "omnicodec/src/Paths_omnicodec.hs"
+      component: "omnicodec:exe:odec"
+
+    - path: "omnicodec/src/oenc.hs"
+      component: "omnicodec:exe:oenc"
+
+    - path: "omnicodec/src/Paths_omnicodec.hs"
+      component: "omnicodec:exe:oenc"
+
+    - path: "sandi/src"
       component: "lib:sandi"
-    - path: "./omnicodec/src/odec.hs"
-      component: "exe:odec"
-    - path: "./omnicodec/src/oenc.hs"
-      component: "exe:oenc"
+
+    - path: "sandi/test-src"
+      component: "sandi:test:sandi-tests"
+
+    - path: "sandi/bench-src/Main.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base16Bench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base32Bench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base32HexBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base64Bench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base64UrlBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/Base85Bench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/QuotedPrintableBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/UuBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/XxBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Codec/Binary/YencBench.hs"
+      component: "sandi:bench:sandi-bench"
+
+    - path: "sandi/bench-src/Paths_sandi.hs"
+      component: "sandi:bench:sandi-bench"
