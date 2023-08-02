@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 
 {-
 oenc - command line utility for data encoding
@@ -31,15 +32,15 @@ import Data.Version (showVersion)
 import System.Console.CmdArgs
 import System.IO
 
-import qualified Data.Conduit.Codec.Base16 as B16
-import qualified Data.Conduit.Codec.Base32 as B32
-import qualified Data.Conduit.Codec.Base32Hex as B32H
-import qualified Data.Conduit.Codec.Base64 as B64
-import qualified Data.Conduit.Codec.Base64Url as B64U
-import qualified Data.Conduit.Codec.Base85 as B85
-import qualified Data.Conduit.Codec.QuotedPrintable as QP
-import qualified Data.Conduit.Codec.Uu as Uu
-import qualified Data.Conduit.Codec.Xx as Xx
+import Data.Conduit.Codec.Base16 qualified as B16
+import Data.Conduit.Codec.Base32 qualified as B32
+import Data.Conduit.Codec.Base32Hex qualified as B32H
+import Data.Conduit.Codec.Base64 qualified as B64
+import Data.Conduit.Codec.Base64Url qualified as B64U
+import Data.Conduit.Codec.Base85 qualified as B85
+import Data.Conduit.Codec.QuotedPrintable qualified as QP
+import Data.Conduit.Codec.Uu qualified as Uu
+import Data.Conduit.Codec.Xx qualified as Xx
 
 ver :: String
 ver =
