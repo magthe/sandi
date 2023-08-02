@@ -1,2 +1,3 @@
-packages: sandi
-          omnicodec
+packages:
+    sandi
+    omnicodec

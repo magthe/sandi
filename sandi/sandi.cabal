@@ -1,113 +1,120 @@
-cabal-version: 2.2
-
-name:           sandi
-version:        0.5
-synopsis:       Data encoding library
-description:    Reasonably fast data encoding library.
-category:       Codec, Conduit
-maintainer:     Magnus Therning <magnus@therning.org>
-license:        BSD-3-Clause
-license-file:   LICENSE
-build-type:     Simple
+cabal-version:      3.0
+name:               sandi
+version:            0.5
+synopsis:           Data encoding library
+description:        Reasonably fast data encoding library.
+category:           Codec, Conduit
+maintainer:         Magnus Therning <magnus@therning.org>
+license:            BSD-3-Clause
+license-file:       LICENSE
+build-type:         Simple
 extra-source-files:
-    package.yaml
-    csrc/codec.h
+  csrc/codec.h
+  package.yaml
 
 source-repository head
-  type: git
+  type:     git
   location: https://github.com/magthe/sandi.git
 
 flag with-conduit
-  manual: True
+  manual:  True
   default: True
 
 library
-  hs-source-dirs: src
+  hs-source-dirs:   src
   exposed-modules:
-      Codec.Binary.Base16
-      Codec.Binary.Base32
-      Codec.Binary.Base32Hex
-      Codec.Binary.Base64
-      Codec.Binary.Base64Url
-      Codec.Binary.Base85
-      Codec.Binary.QuotedPrintable
-      Codec.Binary.Uu
-      Codec.Binary.Xx
-      Codec.Binary.Yenc
-  other-modules:
-      Paths_sandi
-  default-language: Haskell2010
+    Codec.Binary.Base16
+    Codec.Binary.Base32
+    Codec.Binary.Base32Hex
+    Codec.Binary.Base64
+    Codec.Binary.Base64Url
+    Codec.Binary.Base85
+    Codec.Binary.QuotedPrintable
+    Codec.Binary.Uu
+    Codec.Binary.Xx
+    Codec.Binary.Yenc
+
+  other-modules:    Paths_sandi
   build-depends:
-      base
+    , base
     , bytestring
-  cc-options: -fPIC -Wall -Wextra
-  c-sources:
-      csrc/codec.c
+
+  default-language: Haskell2010
+  ghc-options:      -Wall -Wunused-packages
+  c-sources:        csrc/codec.c
+  cc-options:       -fPIC -Wall -Wextra
+
   if flag(with-conduit)
     exposed-modules:
-        Data.Conduit.Codec.Base16
-        Data.Conduit.Codec.Base32
-        Data.Conduit.Codec.Base32Hex
-        Data.Conduit.Codec.Base64
-        Data.Conduit.Codec.Base64Url
-        Data.Conduit.Codec.Base85
-        Data.Conduit.Codec.QuotedPrintable
-        Data.Conduit.Codec.Uu
-        Data.Conduit.Codec.Xx
-        Data.Conduit.Codec.Yenc
-    other-modules:
-        Data.Conduit.Codec.Util
+      Data.Conduit.Codec.Base16
+      Data.Conduit.Codec.Base32
+      Data.Conduit.Codec.Base32Hex
+      Data.Conduit.Codec.Base64
+      Data.Conduit.Codec.Base64Url
+      Data.Conduit.Codec.Base85
+      Data.Conduit.Codec.QuotedPrintable
+      Data.Conduit.Codec.Uu
+      Data.Conduit.Codec.Xx
+      Data.Conduit.Codec.Yenc
+
+    other-modules:   Data.Conduit.Codec.Util
     build-depends:
-        conduit
+      , conduit
       , exceptions
 
 test-suite sandi-tests
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs: test-src
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  hs-source-dirs:   test-src
   other-modules:
-      Codec.Binary.Base16Test
-      Codec.Binary.Base32HexTest
-      Codec.Binary.Base32Test
-      Codec.Binary.Base64Test
-      Codec.Binary.Base64UrlTest
-      Codec.Binary.Base85Test
-      Codec.Binary.QuotedPrintableTest
-      Codec.Binary.UuTest
-      Codec.Binary.XxTest
-      Codec.Binary.YencTest
-      Codec.TestUtils
-      Paths_sandi
-  default-language: Haskell2010
+    Codec.Binary.Base16Test
+    Codec.Binary.Base32HexTest
+    Codec.Binary.Base32Test
+    Codec.Binary.Base64Test
+    Codec.Binary.Base64UrlTest
+    Codec.Binary.Base85Test
+    Codec.Binary.QuotedPrintableTest
+    Codec.Binary.UuTest
+    Codec.Binary.XxTest
+    Codec.Binary.YencTest
+    Codec.TestUtils
+    Paths_sandi
+
   build-depends:
-      QuickCheck
     , base
     , bytestring
+    , QuickCheck
     , sandi
     , tasty
     , tasty-hunit
     , tasty-quickcheck
     , tasty-th
 
-benchmark sandi-bench
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs: bench-src
-  other-modules:
-      Codec.Binary.Base16Bench
-      Codec.Binary.Base32Bench
-      Codec.Binary.Base32HexBench
-      Codec.Binary.Base64Bench
-      Codec.Binary.Base64UrlBench
-      Codec.Binary.Base85Bench
-      Codec.Binary.QuotedPrintableBench
-      Codec.Binary.UuBench
-      Codec.Binary.XxBench
-      Codec.Binary.YencBench
-      Paths_sandi
   default-language: Haskell2010
+  ghc-options:      -Wall -Wunused-packages
+
+benchmark sandi-bench
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  hs-source-dirs:   bench-src
+  other-modules:
+    Codec.Binary.Base16Bench
+    Codec.Binary.Base32Bench
+    Codec.Binary.Base32HexBench
+    Codec.Binary.Base64Bench
+    Codec.Binary.Base64UrlBench
+    Codec.Binary.Base85Bench
+    Codec.Binary.QuotedPrintableBench
+    Codec.Binary.UuBench
+    Codec.Binary.XxBench
+    Codec.Binary.YencBench
+    Paths_sandi
+
   build-depends:
-      base
+    , base
     , bytestring
     , criterion
     , sandi
+
+  default-language: Haskell2010
+  ghc-options:      -Wall -Wunused-packages
