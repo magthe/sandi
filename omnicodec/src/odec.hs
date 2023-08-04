@@ -22,15 +22,34 @@ module Main where
 
 import Paths_omnicodec (version)
 
-import Control.Exception
-import Control.Monad.IO.Class
-import Data.ByteString as BS
-import Data.Conduit
+import Control.Exception (bracket)
+import Control.Monad.IO.Class (MonadIO)
+import Data.ByteString as BS (ByteString)
+import Data.Conduit (ConduitM, ConduitT, runConduit, (.|))
 import Data.Conduit.Combinators (sinkHandle, sourceHandle)
-import Data.Maybe
+import Data.Maybe (fromJust)
 import Data.Version (showVersion)
-import System.Console.CmdArgs
-import System.IO as SIO
+import System.Console.CmdArgs (
+    Data,
+    Typeable,
+    cmdArgs,
+    details,
+    explicit,
+    help,
+    name,
+    summary,
+    typ,
+    typFile,
+    (&=),
+ )
+import System.IO as SIO (
+    Handle,
+    IOMode (ReadMode, WriteMode),
+    hClose,
+    openFile,
+    stdin,
+    stdout,
+ )
 
 import Data.Conduit.Codec.Base16 qualified as B16
 import Data.Conduit.Codec.Base32 qualified as B32

@@ -4,7 +4,7 @@ module Main where
 
 import Criterion.Main (defaultMain)
 import Data.ByteString qualified as BS
-import System.IO
+import System.IO (IOMode (ReadMode), openFile)
 
 import Codec.Binary.Base16Bench qualified as B16B
 import Codec.Binary.Base32Bench qualified as B32B

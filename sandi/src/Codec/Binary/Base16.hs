@@ -18,9 +18,19 @@ module Codec.Binary.Base16 (
 
 import Data.ByteString qualified as BS
 import Data.ByteString.Unsafe qualified as BSU
-import Foreign
-import Foreign.C.Types
-import System.IO.Unsafe as U
+import Foreign (
+    Ptr,
+    Word8,
+    alloca,
+    castPtr,
+    free,
+    mallocBytes,
+    peek,
+    poke,
+    reallocBytes,
+ )
+import Foreign.C.Types (CInt (..), CSize (..))
+import System.IO.Unsafe as U (unsafePerformIO)
 
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum

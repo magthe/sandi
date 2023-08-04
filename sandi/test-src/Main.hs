@@ -5,7 +5,7 @@
 
 module Main where
 
-import Test.Tasty
+import Test.Tasty (TestTree, defaultMain, testGroup)
 
 import Codec.Binary.Base16Test qualified as B16Test
 import Codec.Binary.Base32HexTest qualified as B32HTest

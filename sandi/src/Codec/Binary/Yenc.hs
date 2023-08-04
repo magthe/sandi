@@ -18,10 +18,19 @@ module Codec.Binary.Yenc (
 
 import Data.ByteString qualified as BS
 import Data.ByteString.Unsafe qualified as BSU
-import Data.List
-import Foreign
-import Foreign.C.Types
-import System.IO.Unsafe as U
+import Data.List (unfoldr)
+import Foreign (
+    Ptr,
+    Storable (peek, poke),
+    Word8,
+    alloca,
+    castPtr,
+    free,
+    mallocBytes,
+    reallocBytes,
+ )
+import Foreign.C.Types (CInt (..), CSize (..))
+import System.IO.Unsafe as U (unsafePerformIO)
 
 castEnum :: (Enum a, Enum b) => a -> b
 castEnum = toEnum . fromEnum

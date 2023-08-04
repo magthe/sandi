@@ -13,10 +13,20 @@ import Data.ByteString.Char8 qualified as BSC
 import Data.Either (fromRight)
 import Data.Word (Word8)
 
-import Test.Tasty
-import Test.Tasty.HUnit
-import Test.Tasty.QuickCheck
-import Test.Tasty.TH
+import Test.Tasty (TestTree)
+import Test.Tasty.HUnit (testCase, (@=?))
+import Test.Tasty.QuickCheck (
+    Arbitrary,
+    Property,
+    arbitrary,
+    checkCoverage,
+    cover,
+    elements,
+    listOf,
+    testProperty,
+    (===),
+ )
+import Test.Tasty.TH (testGroupGenerator)
 
 case_b16_enc_foobar :: IO ()
 case_b16_enc_foobar = do
